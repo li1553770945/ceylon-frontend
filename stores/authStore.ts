@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { type User, type Profile, type Session } from "@/types";
+import { apiJson } from "@/lib/api-client";
 
 interface AuthState {
   user: User | null;
@@ -13,8 +14,6 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   checkSession: () => Promise<void>;
 }
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -32,11 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   checkSession: async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/auth/session`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Session invalid");
-      const data: Session = await res.json();
+      const data = await apiJson<Session>("/api/v1/auth/session");
       if (data.authenticated && data.user && data.profile) {
         set({
           user: data.user,

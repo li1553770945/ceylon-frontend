@@ -1,6 +1,30 @@
 import { type ApiError } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+const API_VERSION_PREFIX = "/api/v1";
+
+function normalizePath(path: string): string {
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+export function buildApiUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  const base = API_BASE.replace(/\/+$/, "");
+  const normalizedPath = normalizePath(path);
+
+  if (
+    base.endsWith(API_VERSION_PREFIX) &&
+    (normalizedPath === API_VERSION_PREFIX ||
+      normalizedPath.startsWith(`${API_VERSION_PREFIX}/`))
+  ) {
+    return `${base}${normalizedPath.slice(API_VERSION_PREFIX.length)}`;
+  }
+
+  return `${base}${normalizedPath}`;
+}
 
 export class ApiClientError extends Error {
   status: number;
@@ -24,12 +48,12 @@ export async function apiJson<T>(
   path: string,
   options: ApiOptions = {}
 ): Promise<T> {
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const url = buildApiUrl(path);
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
 
-  if (!(options.body instanceof FormData)) {
+  if (options.body !== undefined && !(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
 
