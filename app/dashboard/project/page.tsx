@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { AppShell } from "@/components/layout/AppShell";
@@ -29,9 +30,9 @@ const mockViews = [
   { id: "view-3", name: "v2.0 重构", description: "前端架构全面重构" },
 ];
 
-export default function ProjectDetailPage() {
-  const params = useParams();
-  const projectId = params.projectId as string;
+function ProjectDetailPageContent() {
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get("projectId") || "proj-1";
 
   return (
     <AuthGuard>
@@ -53,13 +54,13 @@ export default function ProjectDetailPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Link href={`/dashboard/project/${projectId}/team`}>
+              <Link href={`/dashboard/project/team?projectId=${projectId}`}>
                 <Button variant="outline" size="sm">
                   <Users className="mr-2 h-4 w-4" />
                   团队
                 </Button>
               </Link>
-              <Link href={`/dashboard/project/${projectId}/settings`}>
+              <Link href={`/dashboard/project/settings?projectId=${projectId}`}>
                 <Button variant="outline" size="sm">
                   <Settings className="mr-2 h-4 w-4" />
                   设置
@@ -93,7 +94,7 @@ export default function ProjectDetailPage() {
               {mockViews.map((view) => (
                 <Link
                   key={view.id}
-                  href={`/dashboard/project/${projectId}/view/${view.id}`}
+                  href={`/dashboard/project/view?projectId=${projectId}&viewId=${view.id}`}
                   className="group rounded-lg border bg-card p-5 shadow-sm transition-colors hover:bg-accent/50"
                 >
                   <div className="flex items-center gap-3">
@@ -110,5 +111,13 @@ export default function ProjectDetailPage() {
         </div>
       </AppShell>
     </AuthGuard>
+  );
+}
+
+export default function ProjectDetailPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProjectDetailPageContent />
+    </Suspense>
   );
 }

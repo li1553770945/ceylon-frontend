@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { AppShell } from "@/components/layout/AppShell";
 import { Input } from "@/components/ui/input";
@@ -48,9 +48,9 @@ const mockMembers: ProjectMember[] = [
   },
 ];
 
-export default function ProjectTeamPage() {
-  const params = useParams();
-  const projectId = params.projectId as string;
+function ProjectTeamPageContent() {
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get("projectId") || "proj-1";
 
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -179,5 +179,13 @@ export default function ProjectTeamPage() {
         </div>
       </AppShell>
     </AuthGuard>
+  );
+}
+
+export default function ProjectTeamPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProjectTeamPageContent />
+    </Suspense>
   );
 }
