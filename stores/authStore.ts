@@ -1,8 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import { type User, type Profile, type Session } from "@/types";
-import { apiJson } from "@/lib/api-client";
+import { type User, type Profile } from "@/types";
+import { clearAuthTokens, getAccessToken, getRefreshToken } from "@/lib/api-client";
+import { fetchCurrentProfile } from "@/lib/auth-api";
 
 interface AuthState {
   user: User | null;
@@ -24,30 +25,34 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuth: (user, profile) =>
     set({ user, profile, isAuthenticated: true, loading: false }),
 
-  clearAuth: () =>
-    set({ user: null, profile: null, isAuthenticated: false, loading: false }),
+  clearAuth: () => {
+    clearAuthTokens();
+    set({ user: null, profile: null, isAuthenticated: false, loading: false });
+  },
 
   setLoading: (loading) => set({ loading }),
 
   checkSession: async () => {
+    if (!getAccessToken() && !getRefreshToken()) {
+      set({
+        user: null,
+        profile: null,
+        isAuthenticated: false,
+        loading: false,
+      });
+      return;
+    }
+
     try {
-      const data = await apiJson<Session>("/api/v1/auth/session");
-      if (data.authenticated && data.user && data.profile) {
-        set({
-          user: data.user,
-          profile: data.profile,
-          isAuthenticated: true,
-          loading: false,
-        });
-      } else {
-        set({
-          user: null,
-          profile: null,
-          isAuthenticated: false,
-          loading: false,
-        });
-      }
+      const data = await fetchCurrentProfile();
+      set({
+        user: data.user,
+        profile: data.profile,
+        isAuthenticated: true,
+        loading: false,
+      });
     } catch {
+      clearAuthTokens();
       set({
         user: null,
         profile: null,

@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/authStore";
-import { apiPost } from "@/lib/api-client";
-import { type Session } from "@/types";
+import { loginWithPassword } from "@/lib/auth-api";
 import { Loader2, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 
@@ -29,11 +28,9 @@ function LoginPageContent() {
     setError("");
     setLoading(true);
     try {
-      const data = await apiPost<Session>("/api/v1/auth/login", { email, password });
-      if (data.user && data.profile) {
-        setAuth(data.user, data.profile);
-        router.push(next);
-      }
+      const data = await loginWithPassword(email.trim(), password);
+      setAuth(data.user, data.profile);
+      router.push(next);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "登录失败";
       setError(msg);
