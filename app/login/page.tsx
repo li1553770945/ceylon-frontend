@@ -246,7 +246,7 @@ function LoginPageContent() {
             <Button
               type="button"
               variant="outline"
-              className="w-full justify-center gap-2 border-ceylonm/30 bg-ceylonm/5 py-5 text-sm font-medium text-ceylonm hover:bg-ceylonm/10"
+              className="w-full justify-center gap-2 border-border bg-background py-5 text-sm font-medium hover:bg-muted"
               onClick={() => handleOAuth("watcha")}
             >
               <WatchaIcon className="h-4 w-4" />
