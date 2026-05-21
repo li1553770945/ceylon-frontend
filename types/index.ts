@@ -2,11 +2,13 @@
 export interface User {
   id: string;
   email: string;
+  username?: string;
 }
 
 export interface Profile {
   id: string;
   email: string;
+  username?: string;
   display_name: string;
   avatar_url: string | null;
   role: "user" | "admin" | "super_user";
@@ -148,9 +150,9 @@ export interface AdminAnalytics {
 
 // ==================== API ====================
 export interface ApiError {
-  code: string;
+  code: string | number;
   message: string;
-  details: Record<string, unknown>;
+  details?: Record<string, unknown>;
 }
 
 export type ProjectRole = "owner" | "admin" | "write" | "read";

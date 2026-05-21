@@ -1,38 +1,42 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { Footer } from "@/components/layout/Footer";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiPost } from "@/lib/api-client";
-import { Loader2, Mail, Lock, User, KeyRound } from "lucide-react";
-import Link from "next/link";
+import { registerWithPassword } from "@/lib/auth-api";
+import { useAuthStore } from "@/stores/authStore";
+import { KeyRound, Loader2, Lock, Mail, User } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const setAuth = useAuthStore((s) => s.setAuth);
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await apiPost("/api/v1/auth/register", {
-        email,
+      const data = await registerWithPassword({
+        email: email.trim(),
+        username: username.trim(),
+        nickname: displayName.trim(),
         password,
-        display_name: displayName,
-        invite_code: inviteCode || undefined,
+        invite_code: inviteCode.trim(),
       });
-      setSuccess(true);
+      setAuth(data.user, data.profile);
+      router.push("/dashboard");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "注册失败";
       setError(msg);
@@ -40,26 +44,6 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <PublicNavbar />
-        <main className="flex flex-1 items-center justify-center px-4">
-          <div className="w-full max-w-[400px] space-y-4 text-center">
-            <h1 className="text-2xl font-semibold">注册成功</h1>
-            <p className="text-muted-foreground">
-              请检查您的邮箱完成验证，或
-              <Link href="/login" className="text-primary hover:underline">
-                直接登录
-              </Link>
-            </p>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -84,6 +68,21 @@ export default function RegisterPage() {
                   className="pl-9"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="username">用户名</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="username"
+                  placeholder="username"
+                  className="pl-9"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </div>
@@ -122,15 +121,16 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="inviteCode">邀请码（可选）</Label>
+              <Label htmlFor="inviteCode">邀请码</Label>
               <div className="relative">
                 <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="inviteCode"
-                  placeholder="如有邀请码请填写"
+                  placeholder="请输入邀请码"
                   className="pl-9"
                   value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -148,10 +148,7 @@ export default function RegisterPage() {
           </form>
 
           <div className="text-center text-sm">
-            <Link
-              href="/login"
-              className="font-medium text-primary hover:underline"
-            >
+            <Link href="/login" className="font-medium text-primary hover:underline">
               已有账号？去登录
             </Link>
           </div>

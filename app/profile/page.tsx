@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { AuthGuard } from "@/components/layout/AuthGuard";
 import { AppShell } from "@/components/layout/AppShell";
+import { AuthGuard } from "@/components/layout/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { apiJson } from "@/lib/api-client";
+import { updateCurrentProfile } from "@/lib/auth-api";
 import { useAuthStore } from "@/stores/authStore";
-import { Camera, Mail, Save, User } from "lucide-react";
+import { Camera, Loader2, Mail, Save, User } from "lucide-react";
 
 export default function ProfilePage() {
   const profile = useAuthStore((state) => state.profile);
@@ -16,23 +18,56 @@ export default function ProfilePage() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [displayName, setDisplayName] = useState(profile?.display_name || "");
   const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url || "");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setDisplayName(profile?.display_name || "");
+    setAvatarPreview(profile?.avatar_url || "");
+    setAvatarFile(null);
+  }, [profile]);
 
   const handleAvatar = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
+    setSaved(false);
   };
 
-  const handleSave = () => {
-    if (user && profile) {
-      setAuth(user, {
-        ...profile,
-        display_name: displayName.trim() || profile.display_name,
-        avatar_url: avatarPreview || profile.avatar_url,
+  const handleSave = async () => {
+    if (!user || !profile) return;
+
+    setSaving(true);
+    setSaved(false);
+    setError("");
+
+    try {
+      let avatarUrl = profile.avatar_url;
+      if (avatarFile) {
+        const body = new FormData();
+        body.append("file", avatarFile);
+        const uploaded = await apiJson<{ url: string }>("/api/v1/uploads/avatar", {
+          method: "POST",
+          body,
+        });
+        avatarUrl = uploaded.url;
+      }
+
+      const data = await updateCurrentProfile({
+        nickname: displayName.trim() || profile.display_name,
+        avatar_url: avatarUrl,
       });
+      setAuth(data.user, data.profile);
+      setSaved(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "保存失败";
+      setError(msg);
+    } finally {
+      setSaving(false);
     }
-    setSaved(true);
   };
 
   return (
@@ -42,7 +77,7 @@ export default function ProfilePage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">个人资料</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              管理显示名、头像和账户邮箱。
+              管理显示名称、头像和账号邮箱。
             </p>
           </div>
 
@@ -88,7 +123,10 @@ export default function ProfilePage() {
               <Input
                 id="displayName"
                 value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
+                onChange={(event) => {
+                  setDisplayName(event.target.value);
+                  setSaved(false);
+                }}
                 placeholder="输入显示名称"
               />
             </div>
@@ -112,8 +150,18 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <Button onClick={handleSave}>
-              <Save className="mr-2 h-4 w-4" />
+            {error && (
+              <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
               保存资料
             </Button>
           </section>

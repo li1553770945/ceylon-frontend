@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/components/ui/button";
@@ -26,10 +26,10 @@ const mockBlog: BlogPost = {
   updated_at: "2025-01-10T08:00:00Z",
 };
 
-export default function BlogEditorPage() {
-  const params = useParams();
+function BlogEditorPageContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const slug = params.slug as string;
+  const slug = searchParams.get("slug") || "new";
   const isNew = slug === "new";
 
   const [form, setForm] = useState<Partial<BlogPost>>(
@@ -224,5 +224,13 @@ export default function BlogEditorPage() {
         </div>
       </AdminShell>
     </AuthGuard>
+  );
+}
+
+export default function BlogEditorPage() {
+  return (
+    <Suspense fallback={null}>
+      <BlogEditorPageContent />
+    </Suspense>
   );
 }

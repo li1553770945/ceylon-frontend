@@ -1,7 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import { type User, type Profile, type Session } from "@/types";
+import { type User, type Profile } from "@/types";
+import { clearAuthTokens, getAccessToken, getRefreshToken } from "@/lib/api-client";
+import { fetchCurrentProfile } from "@/lib/auth-api";
 
 interface AuthState {
   user: User | null;
@@ -14,8 +16,6 @@ interface AuthState {
   checkSession: () => Promise<void>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   profile: null,
@@ -25,34 +25,34 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuth: (user, profile) =>
     set({ user, profile, isAuthenticated: true, loading: false }),
 
-  clearAuth: () =>
-    set({ user: null, profile: null, isAuthenticated: false, loading: false }),
+  clearAuth: () => {
+    clearAuthTokens();
+    set({ user: null, profile: null, isAuthenticated: false, loading: false });
+  },
 
   setLoading: (loading) => set({ loading }),
 
   checkSession: async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/auth/session`, {
-        credentials: "include",
+    if (!getAccessToken() && !getRefreshToken()) {
+      set({
+        user: null,
+        profile: null,
+        isAuthenticated: false,
+        loading: false,
       });
-      if (!res.ok) throw new Error("Session invalid");
-      const data: Session = await res.json();
-      if (data.authenticated && data.user && data.profile) {
-        set({
-          user: data.user,
-          profile: data.profile,
-          isAuthenticated: true,
-          loading: false,
-        });
-      } else {
-        set({
-          user: null,
-          profile: null,
-          isAuthenticated: false,
-          loading: false,
-        });
-      }
+      return;
+    }
+
+    try {
+      const data = await fetchCurrentProfile();
+      set({
+        user: data.user,
+        profile: data.profile,
+        isAuthenticated: true,
+        loading: false,
+      });
     } catch {
+      clearAuthTokens();
       set({
         user: null,
         profile: null,

@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { apiPost } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/authStore";
 import type { CliToken } from "@/types";
 import { KeyRound, LogOut, Plus, Trash2 } from "lucide-react";
@@ -46,7 +47,12 @@ export default function SettingsPage() {
     setTokenName("");
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await apiPost("/api/v1/auth/logout", {});
+    } catch {
+      // Local logout should still complete if the server token is already invalid.
+    }
     clearAuth();
     router.push("/login");
   };
