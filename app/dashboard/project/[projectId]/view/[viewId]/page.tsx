@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { AppShell } from "@/components/layout/AppShell";
 import RequirementsTable, {
@@ -77,10 +77,10 @@ const fixedColumns: TableColumn[] = [
   "assignee",
 ];
 
-function RequirementViewPageContent() {
-  const searchParams = useSearchParams();
-  const projectId = searchParams.get("projectId") || "proj-1";
-  const viewId = searchParams.get("viewId") || "view-1";
+export default function RequirementViewPage() {
+  const params = useParams();
+  const projectId = params.projectId as string;
+  const viewId = params.viewId as string;
 
   const [requirements, setRequirements] =
     useState<Requirement[]>(initialRequirements);
@@ -221,7 +221,7 @@ function RequirementViewPageContent() {
       <AppShell
         title="版本视图"
         breadcrumbs={[
-          { label: "项目", href: `/dashboard/project?projectId=${projectId}` },
+          { label: "项目", href: `/dashboard/project/${projectId}` },
           { label: "需求视图" },
         ]}
       >
@@ -322,14 +322,6 @@ function RequirementViewPageContent() {
         </div>
       </AppShell>
     </AuthGuard>
-  );
-}
-
-export default function RequirementViewPage() {
-  return (
-    <Suspense fallback={null}>
-      <RequirementViewPageContent />
-    </Suspense>
   );
 }
 

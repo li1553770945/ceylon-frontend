@@ -66,7 +66,7 @@ export default function DashboardPage() {
             {filtered.map((project) => (
               <Link
                 key={project.id}
-                href={`/dashboard/project?projectId=${project.id}`}
+                href={`/dashboard/project/${project.id}`}
                 className="group relative rounded-lg border bg-card p-5 shadow-sm transition-colors hover:bg-accent/50"
               >
                 <div className="flex items-start justify-between">

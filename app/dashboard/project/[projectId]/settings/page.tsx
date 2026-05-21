@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { AppShell } from "@/components/layout/AppShell";
 import { Input } from "@/components/ui/input";
@@ -39,9 +39,9 @@ const mockViews: VersionView[] = [
   },
 ];
 
-function ProjectSettingsPageContent() {
-  const searchParams = useSearchParams();
-  const projectId = searchParams.get("projectId") || "proj-1";
+export default function ProjectSettingsPage() {
+  const params = useParams();
+  const projectId = params.projectId as string;
 
   const [project, setProject] = useState<Project | null>(null);
   const [views, setViews] = useState<VersionView[]>([]);
@@ -167,13 +167,5 @@ function ProjectSettingsPageContent() {
         </div>
       </AppShell>
     </AuthGuard>
-  );
-}
-
-export default function ProjectSettingsPage() {
-  return (
-    <Suspense fallback={null}>
-      <ProjectSettingsPageContent />
-    </Suspense>
   );
 }

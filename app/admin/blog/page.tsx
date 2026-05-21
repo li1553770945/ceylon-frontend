@@ -101,7 +101,7 @@ export default function AdminBlogPage() {
               </p>
             </div>
             <Button asChild className="bg-ceylon-500 hover:bg-ceylon-600">
-              <Link href="/admin/blog/editor?slug=new">
+              <Link href="/admin/blog/new">
                 <Plus className="mr-2 h-4 w-4" />
                 新建博客
               </Link>
@@ -164,7 +164,7 @@ export default function AdminBlogPage() {
                       </td>
                       <td className="px-grid-4 py-3 text-right">
                         <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/admin/blog/editor?slug=${blog.slug}`}>
+                          <Link href={`/admin/blog/${blog.slug}`}>
                             <Pencil className="h-4 w-4" />
                           </Link>
                         </Button>
