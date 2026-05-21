@@ -2,12 +2,14 @@
 
 import { useEffect } from "react";
 import { initTheme, useThemeStore } from "@/stores/themeStore";
+import { initLocale } from "@/i18n";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const mode = useThemeStore((s) => s.mode);
 
   useEffect(() => {
     initTheme();
+    initLocale();
   }, []);
 
   useEffect(() => {

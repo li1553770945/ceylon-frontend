@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 function Spinner({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center justify-center", className)}>
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-[#f97316]" />
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-[#c85c1b]" />
     </div>
   );
 }

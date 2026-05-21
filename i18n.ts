@@ -19,6 +19,17 @@ export function getClientLocale(): Locale {
   return defaultLocale;
 }
 
+/** Detect system language on first visit and persist it */
+export function initLocale() {
+  if (typeof window === "undefined") return;
+  const stored = localStorage.getItem("ceylon-locale");
+  if (stored) return; // user already has a preference
+  const browserLang = navigator.language.split("-")[0] as Locale;
+  if (locales.includes(browserLang)) {
+    localStorage.setItem("ceylon-locale", browserLang);
+  }
+}
+
 export function setClientLocale(locale: Locale) {
   if (typeof window === "undefined") return;
   localStorage.setItem("ceylon-locale", locale);

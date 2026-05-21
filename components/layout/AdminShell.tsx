@@ -46,7 +46,7 @@ export function AdminShell({ children, className }: AdminShellProps) {
           {!collapsed && (
             <Link href="/dashboard" className="flex items-center gap-2 text-base font-bold">
               CEYLON
-              <span className="h-2 w-2 rounded-full bg-[#f97316]" />
+              <span className="h-2 w-2 rounded-full bg-[#c85c1b]" />
             </Link>
           )}
           <button

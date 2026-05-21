@@ -71,7 +71,7 @@ export function Sidebar({
       <div className="flex h-16 items-center gap-2 px-6">
         <Link href="/dashboard" className="flex items-center gap-2 text-lg font-bold">
           CEYLON
-          <span className="h-2 w-2 rounded-full bg-[#f97316]" />
+          <span className="h-2 w-2 rounded-full bg-[#c85c1b]" />
         </Link>
         {mobileOpen && (
           <button

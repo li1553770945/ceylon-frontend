@@ -40,7 +40,7 @@ export function ProjectSwitcher({
         className="flex w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors hover:bg-accent"
       >
         <span className="flex items-center gap-2 truncate">
-          <FolderKanban className="h-4 w-4 text-[#f97316]" />
+          <FolderKanban className="h-4 w-4 text-[#c85c1b]" />
           <span className="truncate">{current?.name || "选择项目"}</span>
         </span>
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />

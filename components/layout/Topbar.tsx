@@ -149,7 +149,7 @@ export function Topbar({ title, breadcrumbs, onMenuClick }: TopbarProps) {
           className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-input transition-colors hover:bg-accent"
         >
           <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#f97316]" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#c85c1b]" />
         </button>
 
         <ThemeToggle />

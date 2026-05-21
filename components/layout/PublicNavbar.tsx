@@ -27,24 +27,30 @@ export function PublicNavbar({ className }: { className?: string }) {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-          CEYLON
-          <span className="h-2 w-2 rounded-full bg-[#f97316]" />
-        </Link>
+        {/* Brand + Nav */}
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2">
+            <img
+              src="/icons/icon.svg"
+              alt="CEYLON"
+              className="h-8 w-auto"
+            />
+            <span className="font-serif text-xl font-bold">锡兰</span>
+          </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+          {/* Desktop Nav */}
+          <nav className="hidden items-center gap-8 md:flex">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-4 md:flex">
@@ -53,7 +59,7 @@ export function PublicNavbar({ className }: { className?: string }) {
           {isAuthenticated ? (
             <Link
               href="/dashboard"
-              className="rounded-md bg-[#f97316] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#f97316]/90"
+              className="rounded-md bg-[#c85c1b] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#c85c1b]/90"
             >
               进入控制台
             </Link>
@@ -67,7 +73,7 @@ export function PublicNavbar({ className }: { className?: string }) {
               </Link>
               <Link
                 href="/register"
-                className="rounded-md bg-[#f97316] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#f97316]/90"
+                className="rounded-md bg-[#c85c1b] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#c85c1b]/90"
               >
                 免费开始使用
               </Link>
@@ -108,7 +114,7 @@ export function PublicNavbar({ className }: { className?: string }) {
               {isAuthenticated ? (
                 <Link
                   href="/dashboard"
-                  className="rounded-md bg-[#f97316] px-4 py-2 text-center text-sm font-medium text-white"
+                  className="rounded-md bg-[#c85c1b] px-4 py-2 text-center text-sm font-medium text-white"
                   onClick={() => setMobileOpen(false)}
                 >
                   进入控制台
@@ -124,7 +130,7 @@ export function PublicNavbar({ className }: { className?: string }) {
                   </Link>
                   <Link
                     href="/register"
-                    className="rounded-md bg-[#f97316] px-4 py-2 text-center text-sm font-medium text-white"
+                    className="rounded-md bg-[#c85c1b] px-4 py-2 text-center text-sm font-medium text-white"
                     onClick={() => setMobileOpen(false)}
                   >
                     免费开始使用
