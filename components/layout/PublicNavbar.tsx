@@ -6,7 +6,6 @@ import { Menu, X } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
-import { LocaleSwitcher } from "./LocaleSwitcher";
 
 const navLinks = [
   { href: "/", label: "首页" },
@@ -55,7 +54,6 @@ export function PublicNavbar({ className }: { className?: string }) {
         {/* Desktop Actions */}
         <div className="hidden items-center gap-4 md:flex">
           <ThemeToggle />
-          <LocaleSwitcher />
           {isAuthenticated ? (
             <Link
               href="/dashboard"
@@ -108,7 +106,6 @@ export function PublicNavbar({ className }: { className?: string }) {
             ))}
             <div className="flex items-center gap-4 pt-2">
               <ThemeToggle />
-              <LocaleSwitcher />
             </div>
             <div className="flex flex-col gap-2 pt-2">
               {isAuthenticated ? (
