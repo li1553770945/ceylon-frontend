@@ -22,6 +22,12 @@ import {
   Github,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const CaptchaDialog = dynamic(
+  () => import("@/components/captcha/CaptchaDialog"),
+  { ssr: false }
+);
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -72,7 +78,7 @@ function SeparatorWithText({ text }: { text: string }) {
 function WatchaIcon({ className }: { className?: string }) {
   return (
     <img
-      src="/icons/watcha.svg"
+      src="/icons/watcha-logo.png"
       alt="观猹"
       className={className}
     />
@@ -131,6 +137,7 @@ function LoginPageContent() {
   const [codeEmail, setCodeEmail] = useState("");
   const [code, setCode] = useState("");
   const [countdown, setCountdown] = useState(0);
+  const [captchaOpen, setCaptchaOpen] = useState(false);
 
   // Shared state
   const [loading, setLoading] = useState(false);
@@ -149,16 +156,22 @@ function LoginPageContent() {
     window.location.href = `${API_BASE}/api/v1/auth/oauth/${provider}?state=${encodeURIComponent(state)}`;
   };
 
-  const handleSendCode = async () => {
+  const handleCaptchaSuccessForSendCode = async (captchaToken: string) => {
+    setCaptchaOpen(false);
     if (!codeEmail || countdown > 0) return;
     setError("");
     try {
-      await sendLoginCode(codeEmail.trim());
+      await sendLoginCode(codeEmail.trim(), captchaToken);
       setCountdown(60);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "发送失败";
       setError(msg);
     }
+  };
+
+  const handleSendCode = () => {
+    if (!codeEmail || countdown > 0) return;
+    setCaptchaOpen(true);
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -207,6 +220,11 @@ function LoginPageContent() {
 
         {/* Middle: Form */}
         <div className="mx-auto w-full max-w-[400px]">
+          <CaptchaDialog
+            open={captchaOpen}
+            onClose={() => setCaptchaOpen(false)}
+            onSuccess={handleCaptchaSuccessForSendCode}
+          />
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">
               欢迎回来

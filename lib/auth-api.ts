@@ -64,10 +64,10 @@ export async function loginWithPassword(identifier: string, password: string) {
   return fetchCurrentProfile();
 }
 
-export async function sendLoginCode(email: string) {
+export async function sendLoginCode(email: string, captchaToken: string) {
   await apiPost<{ message: string }>(
     "/api/v1/auth/login/code/send",
-    { email },
+    { email, captcha_token: captchaToken },
     { auth: false }
   );
 }
@@ -88,6 +88,7 @@ export async function registerWithPassword(input: {
   nickname: string;
   password: string;
   invite_code: string;
+  captcha_token: string;
 }) {
   const result = await apiPost<RegisterResponse>("/api/v1/auth/register", input, {
     auth: false,

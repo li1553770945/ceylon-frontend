@@ -11,6 +11,12 @@ import { Label } from "@/components/ui/label";
 import { registerWithPassword } from "@/lib/auth-api";
 import { useAuthStore } from "@/stores/authStore";
 import { KeyRound, Loader2, Lock, Mail, User } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const CaptchaDialog = dynamic(
+  () => import("@/components/captcha/CaptchaDialog"),
+  { ssr: false }
+);
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,9 +28,10 @@ export default function RegisterPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [captchaOpen, setCaptchaOpen] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCaptchaSuccess = async (captchaToken: string) => {
+    setCaptchaOpen(false);
     setError("");
     setLoading(true);
     try {
@@ -34,6 +41,7 @@ export default function RegisterPage() {
         nickname: displayName.trim(),
         password,
         invite_code: inviteCode.trim(),
+        captcha_token: captchaToken,
       });
       setAuth(data.user, data.profile);
       router.push("/dashboard");
@@ -43,6 +51,16 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!email.trim() || !username.trim() || !displayName.trim() || !password || !inviteCode.trim()) {
+      setError("请填写所有必填项");
+      return;
+    }
+    setCaptchaOpen(true);
   };
 
   return (
@@ -57,6 +75,11 @@ export default function RegisterPage() {
             </p>
           </div>
 
+          <CaptchaDialog
+            open={captchaOpen}
+            onClose={() => setCaptchaOpen(false)}
+            onSuccess={handleCaptchaSuccess}
+          />
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="displayName">显示名称</Label>
