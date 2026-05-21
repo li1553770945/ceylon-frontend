@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Rss } from "lucide-react";
+import { ExternalLink, Github, Globe, Rss } from "lucide-react";
 
 const productLinks = [
   { href: "/", label: "首页" },
@@ -28,16 +28,11 @@ const developerLinks = [
 const legalLinks = [
   { href: "/", label: "服务条款" },
   { href: "/", label: "隐私政策" },
-  {
-    href: "https://beian.miit.gov.cn/#/Integrated/index",
-    label: "苏ICP备2022010563号-3",
-    external: true,
-  },
 ];
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-border/50 bg-[#0a0a0a]">
+    <footer className="w-full border-t border-border bg-background">
       <div className="container-8 py-16">
         <div className="grid gap-12 lg:grid-cols-12">
           {/* Left — Brand & Newsletter */}
@@ -48,7 +43,7 @@ export function Footer() {
                 alt="锡兰"
                 className="h-6 w-auto"
               />
-              <span className="font-serif text-lg font-bold text-white">
+              <span className="font-serif text-lg font-bold text-foreground">
                 锡兰
               </span>
             </Link>
@@ -59,7 +54,7 @@ export function Footer() {
                 href="https://kirigaya.cn/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-white"
+                className="text-muted-foreground transition-colors hover:text-foreground"
                 title="锦恢的博客"
               >
                 <Rss className="h-4 w-4" />
@@ -68,7 +63,7 @@ export function Footer() {
                 href="https://peacesheep.xyz/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-white"
+                className="text-muted-foreground transition-colors hover:text-foreground"
                 title="peacesheep 的博客"
               >
                 <ExternalLink className="h-4 w-4" />
@@ -77,10 +72,19 @@ export function Footer() {
                 href="https://github.com/li1553770945"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-white"
+                className="text-muted-foreground transition-colors hover:text-foreground"
                 title="GitHub"
               >
                 <Github className="h-4 w-4" />
+              </a>
+              <a
+                href="https://www.zhihu.com/people/can-meng-zhong-de-che-xian"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+                title="知乎"
+              >
+                <Globe className="h-4 w-4" />
               </a>
             </div>
 
@@ -91,7 +95,7 @@ export function Footer() {
               <Input
                 type="email"
                 placeholder="your@email.com"
-                className="h-9 border-white/10 bg-white/5 text-sm text-white placeholder:text-muted-foreground/50 focus-visible:ring-ceylonm"
+                className="h-9 border-border bg-muted text-sm text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-ceylonm"
               />
               <Button
                 size="sm"
@@ -106,13 +110,13 @@ export function Footer() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:grid-cols-4">
             {/* Product */}
             <div>
-              <h4 className="text-sm font-semibold text-white">产品</h4>
+              <h4 className="text-sm font-semibold text-foreground">产品</h4>
               <ul className="mt-4 space-y-2.5">
                 {productLinks.map((link) => (
                   <li key={link.href + link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-white"
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link.label}
                     </Link>
@@ -123,7 +127,7 @@ export function Footer() {
 
             {/* Developers */}
             <div>
-              <h4 className="text-sm font-semibold text-white">开发者</h4>
+              <h4 className="text-sm font-semibold text-foreground">开发者</h4>
               <ul className="mt-4 space-y-2.5">
                 {developerLinks.map((link) => (
                   <li key={link.href}>
@@ -131,7 +135,7 @@ export function Footer() {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-white"
+                      className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link.label}
                       <ExternalLink className="h-3 w-3" />
@@ -143,12 +147,12 @@ export function Footer() {
 
             {/* Support */}
             <div>
-              <h4 className="text-sm font-semibold text-white">支持</h4>
+              <h4 className="text-sm font-semibold text-foreground">支持</h4>
               <ul className="mt-4 space-y-2.5">
                 <li>
                   <Link
                     href="/docs"
-                    className="text-sm text-muted-foreground transition-colors hover:text-white"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     帮助文档
                   </Link>
@@ -163,28 +167,16 @@ export function Footer() {
 
             {/* Legal */}
             <div>
-              <h4 className="text-sm font-semibold text-white">法律</h4>
+              <h4 className="text-sm font-semibold text-foreground">法律</h4>
               <ul className="mt-4 space-y-2.5">
                 {legalLinks.map((link) => (
                   <li key={link.href + link.label}>
-                    {link.external ? (
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-white"
-                      >
-                        {link.label}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    ) : (
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground transition-colors hover:text-white"
-                      >
-                        {link.label}
-                      </Link>
-                    )}
+                    <Link
+                      href={link.href}
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -193,7 +185,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-16 flex flex-col items-center justify-between gap-3 border-t border-white/5 pt-6 sm:flex-row">
+        <div className="mt-16 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 sm:flex-row">
           <p className="text-xs text-muted-foreground/60">
             © {new Date().getFullYear()} 锡兰. All rights reserved.
           </p>

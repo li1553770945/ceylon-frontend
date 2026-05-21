@@ -94,13 +94,13 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative flex min-h-[calc(100vh-64px)] flex-col items-center justify-center px-6">
+        <section className="relative flex min-h-[100vh] flex-col items-center justify-center px-6">
           <div
             className={`mx-auto max-w-3xl text-center transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-ceylonm/20 bg-ceylonm/10 px-4 py-1.5 text-sm font-medium text-ceylonm dark:border-ceylonm/30 dark:bg-ceylonm/15">
               <span>✨</span>
-              AI 驱动的需求管理平台
+              我们发布了 ceylonm！AI Coding 时代的需求管理平台！
             </div>
 
             <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl md:leading-tight">
