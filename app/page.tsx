@@ -94,25 +94,41 @@ export default function HomePage() {
       <PublicNavbar />
 
       <main className="flex-1">
-        <section className="relative flex min-h-[calc(100vh-64px)] flex-col items-center justify-center px-6 lg:flex-row lg:items-center lg:gap-12">
-          <div className="lg:w-1/2 lg:text-left">
+        {/* ── Hero: Full-screen with 3D background ── */}
+        <section className="relative flex min-h-[calc(100vh-64px)] items-center justify-center overflow-hidden">
+          {/* 3D Scene Background — full bleed */}
+          <div className="absolute inset-0 z-0 hidden lg:block">
+            <HeroScene />
+          </div>
+
+          {/* Mobile fallback gradient */}
+          <div
+            className="absolute inset-0 z-0 block lg:hidden"
+            style={{
+              background:
+                "radial-gradient(ellipse at 50% 30%, #1a0a00 0%, #080808 60%)",
+            }}
+          />
+
+          {/* Text overlay — left-aligned on desktop */}
+          <div className="container-8 relative z-10 flex w-full flex-col items-center justify-center px-6 lg:items-start">
             <div
-              className={`mx-auto max-w-xl text-center transition-opacity duration-1000 lg:mx-0 lg:max-w-lg ${mounted ? "opacity-100" : "opacity-0"}`}
+              className={`max-w-xl transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
             >
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-ceylonm/20 bg-ceylonm/10 px-4 py-1.5 text-sm font-medium text-ceylonm dark:border-ceylonm/30 dark:bg-ceylonm/15">
-                <span>✨</span>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-ceylonm/30 bg-black/40 px-4 py-1.5 text-sm font-medium text-ceylonm backdrop-blur-sm">
+                <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-ceylonm" />
                 AI 驱动的需求管理平台
               </div>
 
-              <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl md:leading-tight">
+              <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg md:text-5xl md:leading-tight lg:text-left">
                 让 AI 接管你的需求工作流
               </h1>
 
-              <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground md:text-xl md:leading-relaxed">
+              <p className="mt-4 max-w-md text-lg text-white/70 drop-shadow-md md:text-xl md:leading-relaxed lg:text-left">
                 锡兰自动将用户反馈转化为需求文档，实现软件迭代的智能闭环。从反馈挖掘新需求，让产品进化永不停歇。
               </p>
 
-              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
+              <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:items-start">
                 <Link href="/register">
                   <Button
                     size="lg"
@@ -126,7 +142,7 @@ export default function HomePage() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="gap-2 px-6 py-3 text-base font-semibold"
+                    className="gap-2 border-white/20 bg-black/30 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm hover:bg-white/10 hover:text-white"
                   >
                     了解更多
                     <BookOpen className="h-4 w-4" />
@@ -136,21 +152,19 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="hidden h-[420px] w-full lg:block lg:h-[520px] lg:w-1/2">
-            <HeroScene />
-          </div>
-
+          {/* Scroll indicator */}
           <button
             onClick={() =>
               window.scrollTo({ top: window.innerHeight, behavior: "smooth" })
             }
-            className="animate-float absolute bottom-8 hidden flex-col items-center gap-1 text-muted-foreground transition-opacity hover:opacity-70 md:flex"
+            className="animate-float absolute bottom-8 z-10 hidden flex-col items-center gap-1 text-white/40 transition-opacity hover:opacity-70 md:flex"
           >
             <span className="text-sm">向下滚动探索更多</span>
             <ChevronDown className="h-5 w-5" />
           </button>
         </section>
 
+        {/* ── Features ── */}
         <section className="border-t border-border bg-muted/30">
           <div className="container-8 py-grid-10 md:py-grid-12">
             <div className="mb-grid-6 text-center">
@@ -182,6 +196,7 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── Pricing ── */}
         <section className="container-8 py-grid-10 md:py-grid-12">
           <div className="mb-grid-6 text-center">
             <p className="text-sm font-semibold uppercase tracking-widest text-ceylonm">
@@ -223,6 +238,7 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── Blog ── */}
         <section className="border-t border-border bg-muted/30">
           <div className="container-8 py-grid-10 md:py-grid-12">
             <div className="mb-grid-6 text-center">

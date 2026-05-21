@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
@@ -17,208 +16,423 @@ export default function HeroScene() {
 
     // ── Scene & Camera ──
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050505);
-    scene.fog = new THREE.FogExp2(0x050505, 0.03);
+    scene.background = new THREE.Color(0x06060a);
 
     const camera = new THREE.PerspectiveCamera(
-      45,
+      40,
       container.clientWidth / container.clientHeight,
       0.1,
       100
     );
-    camera.position.set(0, 1.5, 9);
+    camera.position.set(0, 0.8, 12);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.toneMapping = THREE.ReinhardToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.5;
     container.appendChild(renderer.domElement);
-
-    // ── Controls ──
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.8;
-    controls.minPolarAngle = Math.PI * 0.3;
-    controls.maxPolarAngle = Math.PI * 0.7;
 
     // ── Post-processing (Bloom) ──
     const renderScene = new RenderPass(scene, camera);
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(container.clientWidth, container.clientHeight),
-      1.5, // strength
-      0.4, // radius
-      0.85 // threshold
+      1.3,
+      0.5,
+      0.2
     );
     const composer = new EffectComposer(renderer);
     composer.addPass(renderScene);
     composer.addPass(bloomPass);
 
     // ── Lights ──
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-    scene.add(ambientLight);
+    scene.add(new THREE.AmbientLight(0x1a1a2e, 0.35));
 
-    const pointLight = new THREE.PointLight(0xc85c1b, 2, 20);
-    pointLight.position.set(0, 2, 4);
-    scene.add(pointLight);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 4);
+    keyLight.position.set(4, 10, 8);
+    scene.add(keyLight);
 
-    const pointLight2 = new THREE.PointLight(0x22d3ee, 1.5, 20);
-    pointLight2.position.set(0, -2, 4);
-    scene.add(pointLight2);
+    const fillLight = new THREE.DirectionalLight(0xffddcc, 1.5);
+    fillLight.position.set(-6, 4, 5);
+    scene.add(fillLight);
 
-    // ── Node data ──
-    const nodes = [
-      {
-        label: "需求",
-        pos: new THREE.Vector3(-3, 0.5, 0),
-        color: 0xc85c1b,
-        emissive: 0xc85c1b,
-      },
-      {
-        label: "AI",
-        pos: new THREE.Vector3(0, -0.5, 0),
-        color: 0xff8c42,
-        emissive: 0xff8c42,
-      },
-      {
-        label: "代码",
-        pos: new THREE.Vector3(3, 0.5, 0),
-        color: 0x22d3ee,
-        emissive: 0x22d3ee,
-      },
-    ];
+    const bottomWarm = new THREE.PointLight(0xc85c1b, 3, 50);
+    bottomWarm.position.set(0, -8, 4);
+    scene.add(bottomWarm);
 
-    // ── Create nodes ──
-    const nodeMeshes: THREE.Mesh[] = [];
-    const nodeGroup = new THREE.Group();
-    scene.add(nodeGroup);
+    const sideCool = new THREE.PointLight(0x22d3ee, 2, 40);
+    sideCool.position.set(-7, 2, -2);
+    scene.add(sideCool);
 
-    nodes.forEach((node) => {
-      const geometry = new THREE.SphereGeometry(0.55, 64, 64);
-      const material = new THREE.MeshStandardMaterial({
-        color: node.color,
-        metalness: 0.85,
-        roughness: 0.15,
-        emissive: node.emissive,
-        emissiveIntensity: 0.6,
-      });
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.copy(node.pos);
-      nodeGroup.add(mesh);
-      nodeMeshes.push(mesh);
+    const topRim = new THREE.PointLight(0xffaa66, 1.5, 35);
+    topRim.position.set(5, 5, -3);
+    scene.add(topRim);
 
-      // Inner core (brighter)
-      const coreGeo = new THREE.SphereGeometry(0.25, 32, 32);
-      const coreMat = new THREE.MeshBasicMaterial({
-        color: node.emissive,
+    // ── Background grid plane (visible through glass refraction) ──
+    const gridHelper = new THREE.GridHelper(20, 40, 0x333344, 0x1a1a2a);
+    gridHelper.position.set(0, -4, -4);
+    gridHelper.rotation.x = 0.1;
+    scene.add(gridHelper);
+
+    // Vertical grid lines behind
+    const vGridGeo = new THREE.BufferGeometry();
+    const vGridPos = new Float32Array([
+      -6, -5, -5,  -6, 5, -5,
+      -3, -5, -5.5, -3, 5, -5.5,
+      0, -5, -6,   0, 5, -6,
+      3, -5, -5.5, 3, 5, -5.5,
+      6, -5, -5,   6, 5, -5,
+    ]);
+    vGridGeo.setAttribute("position", new THREE.BufferAttribute(vGridPos, 3));
+    const vGridMat = new THREE.LineBasicMaterial({ color: 0x222233, transparent: true, opacity: 0.4 });
+    scene.add(new THREE.LineSegments(vGridGeo, vGridMat));
+
+    // ── Background content (visible through glass) ──
+    // A field of small glowing dots behind the stack
+    const bgDotsCount = 250;
+    const bgDotsGeo = new THREE.BufferGeometry();
+    const bgDotPositions = new Float32Array(bgDotsCount * 3);
+    const bgDotColors = new Float32Array(bgDotsCount * 3);
+    for (let i = 0; i < bgDotsCount; i++) {
+      bgDotPositions[i * 3] = (Math.random() - 0.5) * 20;
+      bgDotPositions[i * 3 + 1] = (Math.random() - 0.5) * 16;
+      bgDotPositions[i * 3 + 2] = -6 - Math.random() * 6;
+
+      const warm = Math.random() > 0.5;
+      bgDotColors[i * 3] = warm ? 0.9 : 0.2;
+      bgDotColors[i * 3 + 1] = warm ? 0.5 : 0.7;
+      bgDotColors[i * 3 + 2] = warm ? 0.2 : 0.9;
+    }
+    bgDotsGeo.setAttribute("position", new THREE.BufferAttribute(bgDotPositions, 3));
+    bgDotsGeo.setAttribute("color", new THREE.BufferAttribute(bgDotColors, 3));
+    const bgDotsMat = new THREE.PointsMaterial({
+      size: 0.06,
+      transparent: true,
+      opacity: 0.5,
+      sizeAttenuation: true,
+      vertexColors: true,
+    });
+    const bgDots = new THREE.Points(bgDotsGeo, bgDotsMat);
+    scene.add(bgDots);
+
+    // Large soft glow orbs behind
+    const orbGeo = new THREE.SphereGeometry(1, 32, 32);
+    const orbMat1 = new THREE.MeshBasicMaterial({
+      color: 0xc85c1b,
+      transparent: true,
+      opacity: 0.06,
+    });
+    const orb1 = new THREE.Mesh(orbGeo, orbMat1);
+    orb1.position.set(-2, -3, -6);
+    orb1.scale.set(4, 4, 4);
+    scene.add(orb1);
+
+    const orbMat2 = new THREE.MeshBasicMaterial({
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.05,
+    });
+    const orb2 = new THREE.Mesh(orbGeo, orbMat2);
+    orb2.position.set(3, 2, -7);
+    orb2.scale.set(5, 5, 5);
+    scene.add(orb2);
+
+    // ── Glass Material ──
+    function createGlassMaterial(color: number, thickness: number) {
+      return new THREE.MeshPhysicalMaterial({
+        color: color,
+        metalness: 0.15,
+        roughness: 0.06,
+        transmission: 0.55,
+        thickness: thickness,
+        ior: 1.5,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.02,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.5,
+        side: THREE.DoubleSide,
+        envMapIntensity: 2.5,
+        attenuationColor: new THREE.Color(color),
+        attenuationDistance: 0.25,
       });
-      const core = new THREE.Mesh(coreGeo, coreMat);
-      mesh.add(core);
+    }
 
-      // Label sprite
+    // ── Main Group ──
+    const mainGroup = new THREE.Group();
+    mainGroup.position.x = 1.5;
+    scene.add(mainGroup);
+
+    // Helper: create a glass plate with edge highlight
+    function createGlassPlate(
+      width: number,
+      height: number,
+      depth: number,
+      color: number,
+      thickness: number,
+      labelText: string,
+      labelColor: string
+    ) {
+      const group = new THREE.Group();
+
+      // Main glass body
+      const geo = new THREE.BoxGeometry(width, height, depth);
+      const mat = createGlassMaterial(color, thickness);
+      const mesh = new THREE.Mesh(geo, mat);
+      group.add(mesh);
+
+      // Edge highlight lines
+      const edgeGeo = new THREE.EdgesGeometry(geo);
+      const edgeMat = new THREE.LineBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.35,
+        blending: THREE.AdditiveBlending,
+      });
+      const edges = new THREE.LineSegments(edgeGeo, edgeMat);
+      group.add(edges);
+
+      // Top surface subtle glow ring
+      const ringGeo = new THREE.RingGeometry(width * 0.35, width * 0.38, 64);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.08,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = height / 2 + 0.001;
+      group.add(ring);
+
+      // Label
       const canvas = document.createElement("canvas");
       canvas.width = 256;
-      canvas.height = 64;
+      canvas.height = 80;
       const ctx = canvas.getContext("2d")!;
       ctx.fillStyle = "rgba(0,0,0,0)";
-      ctx.fillRect(0, 0, 256, 64);
-      ctx.font = "bold 32px sans-serif";
-      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, 256, 80);
+      ctx.font = "bold 26px sans-serif";
+      ctx.fillStyle = labelColor;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(node.label, 128, 32);
-      const texture = new THREE.CanvasTexture(canvas);
-      const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
-      const sprite = new THREE.Sprite(spriteMat);
-      sprite.scale.set(1.8, 0.45, 1);
-      sprite.position.set(0, -1, 0);
-      mesh.add(sprite);
-    });
-
-    // ── Create pipes (tubes) ──
-    const pipePaths = [
-      [nodes[0].pos, nodes[1].pos],
-      [nodes[1].pos, nodes[2].pos],
-      [nodes[2].pos, nodes[0].pos],
-    ];
-
-    const pipeMaterials: THREE.MeshStandardMaterial[] = [];
-    pipePaths.forEach(([start, end]) => {
-      const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-      mid.y += 0.8; // arch up
-      const curve = new THREE.CatmullRomCurve3([start, mid, end]);
-      const tubeGeo = new THREE.TubeGeometry(curve, 64, 0.08, 8, false);
-      const tubeMat = new THREE.MeshStandardMaterial({
-        color: 0x333333,
-        metalness: 0.9,
-        roughness: 0.1,
-        emissive: 0xc85c1b,
-        emissiveIntensity: 0.15,
-      });
-      pipeMaterials.push(tubeMat);
-      const tube = new THREE.Mesh(tubeGeo, tubeMat);
-      nodeGroup.add(tube);
-    });
-
-    // ── Flowing particles ──
-    const particleCount = 60;
-    const particles: {
-      mesh: THREE.Mesh;
-      curve: THREE.CatmullRomCurve3;
-      t: number;
-      speed: number;
-    }[] = [];
-
-    for (let i = 0; i < particleCount; i++) {
-      const pipeIndex = i % 3;
-      const [start, end] = pipePaths[pipeIndex];
-      const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-      mid.y += 0.8;
-      const curve = new THREE.CatmullRomCurve3([start, mid, end]);
-
-      const pGeo = new THREE.SphereGeometry(0.06, 16, 16);
-      const pMat = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
+      ctx.fillText(labelText, 128, 40);
+      const tex = new THREE.CanvasTexture(canvas);
+      const spriteMat = new THREE.SpriteMaterial({
+        map: tex,
         transparent: true,
         opacity: 0.8,
       });
-      const pMesh = new THREE.Mesh(pGeo, pMat);
-      nodeGroup.add(pMesh);
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(1.6, 0.5, 1);
+      sprite.position.set(0, 0, depth / 2 + 0.15);
+      group.add(sprite);
 
-      particles.push({
+      return { group, mesh, mat, edges, edgeMat, ring, ringMat, sprite };
+    }
+
+    // ── Layer 1: User Feedback (bottom) ──
+    const layer1 = createGlassPlate(
+      4.2, 0.06, 4.2,
+      0xff8c42, 0.4,
+      "用户反馈", "rgba(255,180,100,0.85)"
+    );
+    layer1.group.position.y = -1.8;
+    mainGroup.add(layer1.group);
+
+    // Feedback bubbles
+    const bubbles: THREE.Mesh[] = [];
+    const bubbleData = [
+      { x: -1.1, z: -0.9 }, { x: 1.2, z: 0.6 },
+      { x: -0.5, z: 1.0 }, { x: 0.7, z: -1.1 },
+      { x: -1.4, z: 0.4 }, { x: 1.4, z: -0.4 },
+      { x: 0, z: 0.5 }, { x: -0.8, z: -0.3 },
+    ];
+    bubbleData.forEach((pos, i) => {
+      const bGeo = new THREE.SphereGeometry(0.09 + (i % 3) * 0.02, 12, 12);
+      const bMat = new THREE.MeshBasicMaterial({
+        color: i % 2 === 0 ? 0xffbb77 : 0xffddaa,
+        transparent: true,
+        opacity: 0.45,
+      });
+      const bubble = new THREE.Mesh(bGeo, bMat);
+      bubble.position.set(pos.x, 0.08, pos.z);
+      layer1.group.add(bubble);
+      bubbles.push(bubble);
+    });
+
+    // ── Layer 2: AI Engine (middle) ──
+    const layer2 = createGlassPlate(
+      3.2, 0.08, 3.2,
+      0xc85c1b, 0.6,
+      "AI 引擎", "rgba(255,140,60,0.9)"
+    );
+    layer2.group.position.y = 0;
+    mainGroup.add(layer2.group);
+
+    // AI Core
+    const coreGeo = new THREE.SphereGeometry(0.4, 32, 32);
+    const coreMat = new THREE.MeshPhysicalMaterial({
+      color: 0xff6b1a,
+      emissive: 0xff6b1a,
+      emissiveIntensity: 2.5,
+      metalness: 0.05,
+      roughness: 0.02,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+    coreMesh.position.y = 0.2;
+    layer2.group.add(coreMesh);
+
+    // Inner white core
+    const innerCoreGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    const innerCoreMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const innerCore = new THREE.Mesh(innerCoreGeo, innerCoreMat);
+    coreMesh.add(innerCore);
+
+    // Orbiting satellites
+    const satellites: THREE.Mesh[] = [];
+    for (let i = 0; i < 8; i++) {
+      const sGeo = new THREE.SphereGeometry(0.045, 8, 8);
+      const sMat = new THREE.MeshBasicMaterial({
+        color: 0xffcc88,
+        transparent: true,
+        opacity: 0.7,
+      });
+      const sat = new THREE.Mesh(sGeo, sMat);
+      layer2.group.add(sat);
+      satellites.push(sat);
+    }
+
+    // ── Layer 3: Code Repository (top) ──
+    const layer3 = createGlassPlate(
+      2.4, 0.06, 2.4,
+      0x22d3ee, 0.5,
+      "代码仓库", "rgba(100,230,255,0.85)"
+    );
+    layer3.group.position.y = 1.8;
+    mainGroup.add(layer3.group);
+
+    // Branch nodes (git graph abstraction)
+    const nodePositions = [
+      { x: -0.8, z: -0.8 }, { x: 0.8, z: -0.8 },
+      { x: 0.8, z: 0.8 }, { x: -0.8, z: 0.8 },
+      { x: 0, z: 0 }, { x: 0, z: -0.8 },
+      { x: 0.8, z: 0 },
+    ];
+    const branchNodes: THREE.Mesh[] = [];
+    nodePositions.forEach((pos) => {
+      const nGeo = new THREE.SphereGeometry(0.065, 8, 8);
+      const nMat = new THREE.MeshBasicMaterial({
+        color: 0x66eeff,
+        transparent: true,
+        opacity: 0.65,
+      });
+      const node = new THREE.Mesh(nGeo, nMat);
+      node.position.set(pos.x, 0.08, pos.z);
+      layer3.group.add(node);
+      branchNodes.push(node);
+    });
+
+    // Connection lines
+    const lineConnections = [
+      [-0.8, 0, -0.8, 0, 0, 0],
+      [0.8, 0, -0.8, 0, 0, 0],
+      [0.8, 0, 0.8, 0, 0, 0],
+      [-0.8, 0, 0.8, 0, 0, 0],
+      [0, 0, -0.8, 0, 0, 0],
+      [0.8, 0, 0, 0, 0, 0],
+      [-0.8, 0, -0.8, 0, 0, -0.8],
+      [0, 0, -0.8, 0.8, 0, -0.8],
+      [0.8, 0, -0.8, 0.8, 0, 0],
+      [0.8, 0, 0, 0.8, 0, 0.8],
+    ];
+    const linePosArray = new Float32Array(lineConnections.flat());
+    const lineGeo = new THREE.BufferGeometry();
+    lineGeo.setAttribute("position", new THREE.BufferAttribute(linePosArray, 3));
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0x44ccdd,
+      transparent: true,
+      opacity: 0.25,
+    });
+    const branchLines = new THREE.LineSegments(lineGeo, lineMat);
+    layer3.group.add(branchLines);
+
+    // ── Data flow particles between layers ──
+    const flowCount = 60;
+    const flowParticles: {
+      mesh: THREE.Mesh;
+      speed: number;
+      progress: number;
+      phase: number;
+      fromY: number;
+      toY: number;
+      spiralR: number;
+    }[] = [];
+
+    for (let i = 0; i < flowCount; i++) {
+      const upward = i < flowCount * 0.6;
+      const fromY = upward ? -1.6 : 1.6;
+      const toY = upward ? 1.6 : -1.6;
+
+      const pGeo = new THREE.SphereGeometry(0.025, 8, 8);
+      const pMat = new THREE.MeshBasicMaterial({
+        color: upward ? 0xffaa55 : 0x55ddff,
+        transparent: true,
+        opacity: 0,
+      });
+      const pMesh = new THREE.Mesh(pGeo, pMat);
+      scene.add(pMesh);
+
+      flowParticles.push({
         mesh: pMesh,
-        curve,
-        t: Math.random(),
-        speed: 0.003 + Math.random() * 0.004,
+        speed: 0.0015 + Math.random() * 0.0035,
+        progress: Math.random(),
+        phase: Math.random() * Math.PI * 2,
+        fromY,
+        toY,
+        spiralR: 0.4 + Math.random() * 0.6,
       });
     }
 
-    // ── Floating dust particles ──
-    const dustCount = 200;
-    const dustGeo = new THREE.BufferGeometry();
-    const dustPositions = new Float32Array(dustCount * 3);
-    for (let i = 0; i < dustCount; i++) {
-      dustPositions[i * 3] = (Math.random() - 0.5) * 12;
-      dustPositions[i * 3 + 1] = (Math.random() - 0.5) * 8;
-      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 8;
+    // ── Foreground floating particles ──
+    const fgCount = 80;
+    const fgGeo = new THREE.BufferGeometry();
+    const fgPositions = new Float32Array(fgCount * 3);
+    const fgOpacities = new Float32Array(fgCount);
+    for (let i = 0; i < fgCount; i++) {
+      fgPositions[i * 3] = (Math.random() - 0.5) * 18;
+      fgPositions[i * 3 + 1] = (Math.random() - 0.5) * 14;
+      fgPositions[i * 3 + 2] = (Math.random() - 0.5) * 6;
+      fgOpacities[i] = Math.random();
     }
-    dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
-    const dustMat = new THREE.PointsMaterial({
-      color: 0xc85c1b,
+    fgGeo.setAttribute("position", new THREE.BufferAttribute(fgPositions, 3));
+    const fgMat = new THREE.PointsMaterial({
+      color: 0xffccaa,
       size: 0.03,
       transparent: true,
-      opacity: 0.4,
+      opacity: 0.25,
+      sizeAttenuation: true,
     });
-    const dust = new THREE.Points(dustGeo, dustMat);
-    scene.add(dust);
+    const fgParticles = new THREE.Points(fgGeo, fgMat);
+    scene.add(fgParticles);
 
-    // ── Resize handler ──
+    // ── Mouse interaction ──
+    const mouse = { x: 0, y: 0 };
+    const targetRot = { x: 0, y: 0 };
+
+    const onMouseMove = (e: MouseEvent) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener("mousemove", onMouseMove);
+
+    // ── Resize ──
     const ro = new ResizeObserver(() => {
       if (!container) return;
       const w = container.clientWidth;
@@ -230,48 +444,91 @@ export default function HeroScene() {
     });
     ro.observe(container);
 
-    // ── Animation loop ──
+    // ── Animation ──
     let animId: number;
     const clock = new THREE.Clock();
 
     function animate() {
       animId = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      const elapsed = clock.getElapsedTime();
+      const t = clock.getElapsedTime();
 
-      controls.update();
+      // Overall slow rotation
+      mainGroup.rotation.y = t * 0.1;
 
-      // Pulse nodes
-      nodeMeshes.forEach((mesh, i) => {
-        const scale = 1 + Math.sin(elapsed * 2 + i * 2) * 0.05;
-        mesh.scale.setScalar(scale);
+      // Layer breathing
+      layer1.group.position.y = -1.8 + Math.sin(t * 0.45) * 0.07;
+      layer2.group.position.y = Math.sin(t * 0.55 + 1.0) * 0.05;
+      layer3.group.position.y = 1.8 + Math.sin(t * 0.4 + 2.0) * 0.04;
+
+      // AI core pulse
+      coreMat.emissiveIntensity = 2.0 + Math.sin(t * 2.5) * 0.7;
+      innerCoreMat.opacity = 0.75 + Math.sin(t * 3.2) * 0.15;
+
+      // Satellites orbit
+      satellites.forEach((sat, i) => {
+        const angle = t * 0.65 + (i * Math.PI * 2) / 8;
+        const r = 0.75 + Math.sin(t * 0.2 + i) * 0.1;
+        sat.position.x = Math.cos(angle) * r;
+        sat.position.z = Math.sin(angle) * r;
+        sat.position.y = 0.2 + Math.sin(t * 0.9 + i * 0.4) * 0.05;
       });
 
-      // Animate particles along curves
-      particles.forEach((p) => {
-        p.t += p.speed;
-        if (p.t > 1) p.t = 0;
-        const point = p.curve.getPoint(p.t);
-        p.mesh.position.copy(point);
-        // Fade near ends
-        const fadeStart = 0.15;
-        const fadeEnd = 0.85;
-        if (p.t < fadeStart) {
-          (p.mesh.material as THREE.MeshBasicMaterial).opacity = p.t / fadeStart * 0.8;
-        } else if (p.t > fadeEnd) {
-          (p.mesh.material as THREE.MeshBasicMaterial).opacity = (1 - p.t) / (1 - fadeEnd) * 0.8;
-        } else {
-          (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.8;
-        }
+      // Bubbles gentle motion
+      bubbles.forEach((bubble, i) => {
+        bubble.position.y = 0.08 + Math.sin(t * 0.7 + i * 1.1) * 0.03;
+        bubble.rotation.x = t * 0.15 + i;
       });
 
-      // Pulse pipe emissive
-      pipeMaterials.forEach((mat, i) => {
-        mat.emissiveIntensity = 0.1 + Math.sin(elapsed * 1.5 + i) * 0.08;
+      // Branch nodes pulse
+      branchNodes.forEach((node, i) => {
+        const s = 1 + Math.sin(t * 1.6 + i * 0.8) * 0.18;
+        node.scale.setScalar(s);
       });
 
-      // Rotate dust slowly
-      dust.rotation.y = elapsed * 0.02;
+      // Edge opacity pulse
+      layer1.edgeMat.opacity = 0.3 + Math.sin(t * 1.0) * 0.12;
+      layer2.edgeMat.opacity = 0.32 + Math.sin(t * 0.85 + 1) * 0.12;
+      layer3.edgeMat.opacity = 0.28 + Math.sin(t * 0.7 + 2) * 0.1;
+
+      // Ring pulse
+      layer1.ringMat.opacity = 0.06 + Math.sin(t * 0.8) * 0.03;
+      layer2.ringMat.opacity = 0.07 + Math.sin(t * 0.7 + 1) * 0.03;
+      layer3.ringMat.opacity = 0.05 + Math.sin(t * 0.6 + 2) * 0.025;
+
+      // Flow particles
+      flowParticles.forEach((p) => {
+        p.progress += p.speed;
+        if (p.progress > 1) p.progress = 0;
+
+        const y = p.fromY + (p.toY - p.fromY) * p.progress;
+        const prog = p.progress;
+        const r = p.spiralR * Math.sin(prog * Math.PI);
+        const x = Math.cos(prog * Math.PI * 5 + p.phase) * r * 0.2;
+        const z = Math.sin(prog * Math.PI * 5 + p.phase) * r * 0.2;
+
+        p.mesh.position.set(x, y, z);
+
+        const mat = p.mesh.material as THREE.MeshBasicMaterial;
+        if (prog < 0.1) mat.opacity = (prog / 0.1) * 0.75;
+        else if (prog > 0.9) mat.opacity = ((1 - prog) / 0.1) * 0.75;
+        else mat.opacity = 0.75;
+      });
+
+      // Background dots drift
+      bgDots.rotation.y = t * 0.008;
+      // Foreground particles
+      fgParticles.rotation.y = t * 0.005;
+      fgParticles.rotation.x = t * 0.003;
+
+      // Background orbs pulse
+      orbMat1.opacity = 0.05 + Math.sin(t * 0.3) * 0.02;
+      orbMat2.opacity = 0.04 + Math.sin(t * 0.25 + 1) * 0.015;
+
+      // Mouse tilt
+      targetRot.x = mouse.y * 0.05;
+      targetRot.y = mouse.x * 0.05;
+      mainGroup.rotation.x += (targetRot.x - mainGroup.rotation.x) * 0.02;
+      mainGroup.rotation.z += (-targetRot.y * 0.35 - mainGroup.rotation.z) * 0.02;
 
       composer.render();
     }
@@ -281,11 +538,16 @@ export default function HeroScene() {
     cleanupRef.current = () => {
       cancelAnimationFrame(animId);
       ro.disconnect();
-      controls.dispose();
+      window.removeEventListener("mousemove", onMouseMove);
       composer.dispose();
       renderer.dispose();
       scene.traverse((obj) => {
-        if (obj instanceof THREE.Mesh || obj instanceof THREE.Points || obj instanceof THREE.Sprite) {
+        if (
+          obj instanceof THREE.Mesh ||
+          obj instanceof THREE.Points ||
+          obj instanceof THREE.Sprite ||
+          obj instanceof THREE.LineSegments
+        ) {
           obj.geometry.dispose();
           if (Array.isArray(obj.material)) {
             obj.material.forEach((m) => m.dispose());
