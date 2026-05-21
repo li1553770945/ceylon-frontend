@@ -33,7 +33,7 @@ export function PublicNavbar({ className }: { className?: string }) {
             <img
               src="/icons/icon.svg"
               alt="CEYLON"
-              className="h-8 w-auto"
+              className="h-6 w-auto"
             />
             <span className="font-serif text-xl font-bold">锡兰</span>
           </Link>

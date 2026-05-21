@@ -48,7 +48,7 @@ function LoginPageContent() {
             <img
               src="/icons/icon.svg"
               alt="锡兰"
-              className="h-7 w-auto"
+              className="h-6 w-auto"
             />
             <span className="font-serif text-lg font-bold">锡兰</span>
           </Link>
