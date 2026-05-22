@@ -95,57 +95,64 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-6 md:flex-row md:items-center md:justify-center md:gap-10 lg:gap-14">
+        <section className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-6">
+          {/* Announcement badge — centered above both columns */}
           <div
-            className={`md:w-[44%] lg:w-[42%] text-center transition-opacity duration-1000 md:text-left ${mounted ? "opacity-100" : "opacity-0"}`}
+            className={`mb-6 flex justify-center md:mb-8 transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
           >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-ceylonm/20 bg-ceylonm/10 px-4 py-1.5 text-sm font-medium text-ceylonm dark:border-ceylonm/30 dark:bg-ceylonm/15">
+            <div className="inline-flex items-center gap-2 rounded-full border border-ceylonm/20 bg-ceylonm/10 px-4 py-1.5 text-sm font-medium text-ceylonm dark:border-ceylonm/30 dark:bg-ceylonm/15">
               <span>✨</span>
               我们发布了 ceylonm！AI Coding 时代的需求管理平台！
             </div>
-
-            <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl md:leading-tight">
-              让 AI 接管你的需求工作流
-            </h1>
-
-            <p className="mx-auto mt-4 max-w-lg text-lg text-muted-foreground md:mx-0 md:max-w-none md:text-xl md:leading-relaxed">
-              锡兰自动将用户反馈转化为需求文档，实现软件迭代的智能闭环。从反馈挖掘新需求，让产品进化永不停歇。
-            </p>
-
-            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center md:justify-start">
-              <Link href="/register">
-                <Button
-                  size="lg"
-                  className="gap-2 bg-ceylonm px-6 py-3 text-base font-semibold text-white shadow-lg shadow-ceylonm/25 hover:bg-ceylonm/90"
-                >
-                  开始项目
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/docs">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="gap-2 px-6 py-3 text-base font-semibold"
-                >
-                  了解更多
-                  <BookOpen className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
           </div>
 
-          <div
-            className={`relative hidden overflow-hidden rounded-2xl bg-neutral-900 shadow-xl shadow-neutral-900/15 dark:shadow-neutral-900/30 md:block md:w-[48%] lg:w-[46%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
-            style={{ aspectRatio: "3/2" }}
-          >
-            <Image
-              src="/home-right.png"
-              alt="CeylonM 平台展示"
-              fill
-              className="object-contain"
-              priority
-            />
+          <div className="flex flex-col items-center justify-center md:flex-row md:items-center md:justify-center md:gap-10 lg:gap-14">
+            <div
+              className={`md:w-[44%] lg:w-[42%] text-center transition-opacity duration-1000 md:text-left ${mounted ? "opacity-100" : "opacity-0"}`}
+            >
+              <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl md:leading-tight">
+                让 AI 接管你的需求工作流
+              </h1>
+
+              <p className="mx-auto mt-4 max-w-lg text-lg text-muted-foreground md:mx-0 md:max-w-none md:text-xl md:leading-relaxed">
+                锡兰自动将用户反馈转化为需求文档，实现软件迭代的智能闭环。从反馈挖掘新需求，让产品进化永不停歇。
+              </p>
+
+              <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center md:justify-start">
+                <Link href="/register">
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-ceylonm px-6 py-3 text-base font-semibold text-white shadow-lg shadow-ceylonm/25 hover:bg-ceylonm/90"
+                  >
+                    开始项目
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/docs">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="gap-2 px-6 py-3 text-base font-semibold"
+                  >
+                    了解更多
+                    <BookOpen className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div
+              className={`relative hidden overflow-hidden rounded-2xl bg-neutral-900 shadow-xl shadow-neutral-900/15 dark:shadow-neutral-900/30 md:block md:w-[48%] lg:w-[46%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+              style={{ aspectRatio: "3/2" }}
+            >
+              <Image
+                src="/home-right.png"
+                alt="CeylonM 平台展示"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
 
           <button
