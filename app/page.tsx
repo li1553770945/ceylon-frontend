@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import HeroScene from "@/components/hero/HeroScene";
 
 const features = [
   {
@@ -94,9 +95,9 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative flex min-h-[100vh] flex-col items-center justify-center px-6">
+        <section className="relative flex min-h-[100vh] flex-col items-center justify-center px-6 md:flex-row md:items-center md:justify-center md:gap-12 lg:gap-16">
           <div
-            className={`mx-auto max-w-3xl text-center transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+            className={`max-w-3xl text-center transition-opacity duration-1000 md:text-left md:max-w-xl lg:max-w-2xl ${mounted ? "opacity-100" : "opacity-0"}`}
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-ceylonm/20 bg-ceylonm/10 px-4 py-1.5 text-sm font-medium text-ceylonm dark:border-ceylonm/30 dark:bg-ceylonm/15">
               <span>✨</span>
@@ -107,11 +108,11 @@ export default function HomePage() {
               让 AI 接管你的需求工作流
             </h1>
 
-            <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground md:text-xl md:leading-relaxed">
+            <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground md:mx-0 md:text-xl md:leading-relaxed">
               锡兰自动将用户反馈转化为需求文档，实现软件迭代的智能闭环。从反馈挖掘新需求，让产品进化永不停歇。
             </p>
 
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center md:justify-start">
               <Link href="/register">
                 <Button
                   size="lg"
@@ -132,6 +133,13 @@ export default function HomePage() {
                 </Button>
               </Link>
             </div>
+          </div>
+
+          <div
+            className={`hidden md:block w-full max-w-lg xl:max-w-xl transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+            style={{ aspectRatio: "3/2" }}
+          >
+            <HeroScene />
           </div>
 
           <button
