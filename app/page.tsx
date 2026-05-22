@@ -95,7 +95,7 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col items-center justify-center px-6">
+        <section className="relative mx-auto flex min-h-[100vh] max-w-7xl flex-col items-center justify-center px-6">
           {/* Announcement badge — centered above both columns */}
           <div
             className={`mb-6 flex justify-center md:mb-8 transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
@@ -142,7 +142,7 @@ export default function HomePage() {
             </div>
 
             <div
-              className={`relative hidden overflow-hidden rounded-2xl bg-neutral-900 shadow-xl shadow-neutral-900/15 dark:shadow-neutral-900/30 md:block md:w-[58%] lg:w-[56%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+              className={`relative hidden md:block md:w-[58%] lg:w-[56%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
               style={{ aspectRatio: "3/2" }}
             >
               <Image
