@@ -22,14 +22,6 @@ const acrylicMat = new THREE.MeshPhysicalMaterial({
   clearcoatRoughness: 0.1,
 });
 
-const darkMat = new THREE.MeshStandardMaterial({
-  color: 0x1a1a2e,
-  roughness: 0.3,
-  metalness: 0.5,
-});
-
-const ledMat = new THREE.MeshBasicMaterial({ color: 0xff6600 });
-
 const floatPositions = [
   { x: -1.8, y: 1.8, z: -0.7 },
   { x: -1.4, y: 2.2, z: 0.6 },
@@ -54,7 +46,6 @@ export default function SourceNode() {
   );
 
   const floatingRefs = useRef<THREE.Mesh[]>([]);
-  const ringRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -64,9 +55,6 @@ export default function SourceNode() {
       mesh.position.y = pos.y + Math.sin(t * (0.8 + i * 0.2) + i) * 0.1;
       mesh.rotation.y = t * 0.3 + i;
     });
-    if (ringRef.current) {
-      ringRef.current.rotation.y = t * 0.5;
-    }
   });
 
   return (
@@ -76,63 +64,26 @@ export default function SourceNode() {
         <primitive object={platformMat} attach="material" />
       </RoundedBox>
 
-      {/* === Industrial Terminal === */}
-      {/* Main body - tall rounded box */}
+      {/* Main cube */}
       <RoundedBox
-        args={[0.9, 1.4, 0.9]}
-        radius={0.08}
+        args={[1.2, 1.2, 1.2]}
+        radius={0.1}
         smoothness={4}
-        position={[0, 1.0, 0]}
+        position={[0, 0.9, 0]}
         castShadow
         receiveShadow
       >
         <primitive object={acrylicMat} attach="material" />
       </RoundedBox>
 
-      {/* Screen area */}
-      <mesh position={[0, 1.05, 0.46]}>
-        <planeGeometry args={[0.65, 0.65]} />
+      {/* </> symbol */}
+      <mesh position={[0, 0.9, 0.61]}>
+        <planeGeometry args={[0.8, 0.8]} />
         <meshBasicMaterial map={codeTexture} transparent />
       </mesh>
 
-      {/* Antenna on top */}
-      <mesh position={[0, 1.8, 0]}>
-        <cylinderGeometry args={[0.02, 0.02, 0.4]} />
-        <meshStandardMaterial color="#888" metalness={0.8} roughness={0.2} />
-      </mesh>
-      <mesh position={[0, 2.05, 0]}>
-        <sphereGeometry args={[0.05]} />
-        <meshBasicMaterial color="#ff6600" />
-      </mesh>
-
-      {/* Side vents */}
-      {[-1, 1].map((side) =>
-        [0.5, 0.7, 0.9, 1.1, 1.3].map((y, i) => (
-          <mesh key={`vent-${side}-${i}`} position={[side * 0.46, y, 0]}>
-            <boxGeometry args={[0.02, 0.08, 0.5]} />
-            <primitive object={darkMat} attach="material" />
-          </mesh>
-        ))
-      )}
-
-      {/* LED indicator ring at bottom */}
-      <group ref={ringRef} position={[0, 0.5, 0]}>
-        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
-          const angle = (i / 8) * Math.PI * 2;
-          return (
-            <mesh
-              key={`led-${i}`}
-              position={[Math.cos(angle) * 0.55, 0, Math.sin(angle) * 0.55]}
-            >
-              <sphereGeometry args={[0.04]} />
-              <primitive object={ledMat} attach="material" />
-            </mesh>
-          );
-        })}
-      </group>
-
       {/* Label */}
-      <mesh position={[0, 2.2, 0]}>
+      <mesh position={[0, 1.75, 0]}>
         <planeGeometry args={[1.8, 0.45]} />
         <meshBasicMaterial map={labelTexture} transparent />
       </mesh>

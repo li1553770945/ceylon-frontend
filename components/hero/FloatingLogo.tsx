@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import * as THREE from "three";
 import { RoundedBox, useTexture } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
 import { createTextTexture } from "./utils";
 
 const platformMat = new THREE.MeshPhysicalMaterial({
@@ -14,20 +13,18 @@ const platformMat = new THREE.MeshPhysicalMaterial({
   clearcoatRoughness: 0.1,
 });
 
-const hubMat = new THREE.MeshPhysicalMaterial({
-  color: 0xc85c1b,
-  roughness: 0.2,
-  metalness: 0.2,
+const chipBodyMat = new THREE.MeshPhysicalMaterial({
+  color: 0x2d2d3a,
+  roughness: 0.25,
+  metalness: 0.3,
   clearcoat: 1.0,
-  clearcoatRoughness: 0.1,
-  emissive: 0xff4400,
-  emissiveIntensity: 0.2,
+  clearcoatRoughness: 0.15,
 });
 
-const darkPortMat = new THREE.MeshStandardMaterial({
-  color: 0x1a1a2e,
-  roughness: 0.4,
-  metalness: 0.6,
+const pinMat = new THREE.MeshStandardMaterial({
+  color: 0xd4af37,
+  roughness: 0.3,
+  metalness: 0.9,
 });
 
 export default function FloatingLogo() {
@@ -56,15 +53,23 @@ export default function FloatingLogo() {
     []
   );
 
-  const ringRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    if (ringRef.current) {
-      ringRef.current.rotation.y = t * 0.8;
-      ringRef.current.position.y = 0.95 + Math.sin(t * 1.5) * 0.03;
+  // Generate pin positions around the chip
+  const pins = useMemo(() => {
+    const arr: { x: number; z: number; rot: number }[] = [];
+    const sides = 4;
+    const pinsPerSide = 3;
+    const offset = 0.48;
+    for (let s = 0; s < sides; s++) {
+      for (let p = 0; p < pinsPerSide; p++) {
+        const t = (p - (pinsPerSide - 1) / 2) * 0.22;
+        if (s === 0) arr.push({ x: t, z: offset, rot: 0 });
+        else if (s === 1) arr.push({ x: offset, z: t, rot: Math.PI / 2 });
+        else if (s === 2) arr.push({ x: t, z: -offset, rot: Math.PI });
+        else arr.push({ x: -offset, z: t, rot: -Math.PI / 2 });
+      }
     }
-  });
+    return arr;
+  }, []);
 
   return (
     <group position={[0, -0.05, 0]}>
@@ -80,61 +85,40 @@ export default function FloatingLogo() {
         <primitive object={platformMat} attach="material" />
       </RoundedBox>
 
-      {/* === Central Hub (Cylinder) === */}
-      <mesh position={[0, 0.75, 0]} castShadow>
-        <cylinderGeometry args={[0.35, 0.4, 0.7, 32]} />
-        <primitive object={hubMat} attach="material" />
-      </mesh>
+      {/* === Chip === */}
+      {/* Chip body */}
+      <RoundedBox
+        args={[0.85, 0.1, 0.85]}
+        radius={0.06}
+        smoothness={4}
+        position={[0, 0.55, 0]}
+        castShadow
+      >
+        <primitive object={chipBodyMat} attach="material" />
+      </RoundedBox>
 
-      {/* Rotating ring on top */}
-      <group ref={ringRef} position={[0, 0.95, 0]}>
-        <mesh>
-          <torusGeometry args={[0.38, 0.03, 8, 32]} />
-          <meshBasicMaterial color="#ffaa66" />
-        </mesh>
-        {/* Indicator lights on ring */}
-        {[0, 1, 2, 3, 4, 5].map((i) => {
-          const angle = (i / 6) * Math.PI * 2;
-          return (
-            <mesh
-              key={`hub-led-${i}`}
-              position={[Math.cos(angle) * 0.38, 0, Math.sin(angle) * 0.38]}
-            >
-              <sphereGeometry args={[0.035]} />
-              <meshBasicMaterial color="#ffffff" />
-            </mesh>
-          );
-        })}
-      </group>
-
-      {/* Side ports */}
-      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
-        const angle = (i / 8) * Math.PI * 2;
-        return (
-          <mesh
-            key={`port-${i}`}
-            position={[Math.cos(angle) * 0.42, 0.75, Math.sin(angle) * 0.42]}
-          >
-            <boxGeometry args={[0.08, 0.12, 0.06]} />
-            <primitive object={darkPortMat} attach="material" />
-          </mesh>
-        );
-      })}
-
-      {/* Icon on front */}
-      <mesh position={[0, 0.75, 0.42]}>
-        <planeGeometry args={[0.45, 0.45]} />
+      {/* Icon on top */}
+      <mesh position={[0, 0.61, 0]}>
+        <planeGeometry args={[0.55, 0.55]} />
         <meshBasicMaterial map={iconTexture} transparent />
       </mesh>
 
+      {/* Gold pins around chip */}
+      {pins.map((pin, i) => (
+        <mesh key={i} position={[pin.x, 0.5, pin.z]} rotation={[0, pin.rot, 0]}>
+          <boxGeometry args={[0.06, 0.04, 0.14]} />
+          <primitive object={pinMat} attach="material" />
+        </mesh>
+      ))}
+
       {/* BRIDGE label */}
-      <mesh position={[0, 1.55, 0]}>
+      <mesh position={[0, 1.15, 0]}>
         <planeGeometry args={[1.1, 0.36]} />
         <meshBasicMaterial map={bridgeLabelTex} transparent />
       </mesh>
 
       {/* Subtitle */}
-      <mesh position={[0, 1.15, 0]}>
+      <mesh position={[0, 0.8, 0]}>
         <planeGeometry args={[2.1, 0.32]} />
         <meshBasicMaterial map={subLabelTex} transparent />
       </mesh>

@@ -18,7 +18,7 @@ export default function HeroScene() {
       style={{ background: "transparent" }}
     >
       <SceneLights />
-      <group scale={0.8} position={[1.0, 0, 0]}>
+      <group scale={0.82} position={[1.5, 0, 0]}>
         <SourceNode />
         <FeedbackNode />
         <FloatingLogo />
