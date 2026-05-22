@@ -25,9 +25,10 @@ export function PublicNavbar({ className }: { className?: string }) {
         className
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        {/* Brand + Nav */}
-        <div className="flex items-center gap-8">
+      <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        {/* Left: ThemeToggle + Brand */}
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link href="/" className="flex items-center gap-2">
             <img
               src="/icons/icon.svg"
@@ -36,24 +37,23 @@ export function PublicNavbar({ className }: { className?: string }) {
             />
             <span className="font-serif text-xl font-bold">锡兰</span>
           </Link>
-
-          {/* Desktop Nav */}
-          <nav className="hidden items-center gap-8 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
         </div>
 
-        {/* Desktop Actions */}
+        {/* Center: Desktop Nav (absolute centered) */}
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Right: Desktop Actions */}
         <div className="hidden items-center gap-4 md:flex">
-          <ThemeToggle />
           {isAuthenticated ? (
             <Link
               href="/dashboard"

@@ -14,7 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import HeroScene from "@/components/hero/HeroScene";
+import Image from "next/image";
 
 const features = [
   {
@@ -95,9 +95,9 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative flex min-h-[100vh] flex-col items-center justify-center px-6 md:flex-row md:items-center md:justify-center">
+        <section className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-6 md:flex-row md:items-center md:justify-center md:gap-10 lg:gap-14">
           <div
-            className={`md:w-[38%] lg:w-[36%] text-center transition-opacity duration-1000 md:text-left ${mounted ? "opacity-100" : "opacity-0"}`}
+            className={`md:w-[44%] lg:w-[42%] text-center transition-opacity duration-1000 md:text-left ${mounted ? "opacity-100" : "opacity-0"}`}
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-ceylonm/20 bg-ceylonm/10 px-4 py-1.5 text-sm font-medium text-ceylonm dark:border-ceylonm/30 dark:bg-ceylonm/15">
               <span>✨</span>
@@ -108,7 +108,7 @@ export default function HomePage() {
               让 AI 接管你的需求工作流
             </h1>
 
-            <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground md:mx-0 md:text-xl md:leading-relaxed">
+            <p className="mx-auto mt-4 max-w-lg text-lg text-muted-foreground md:mx-0 md:max-w-none md:text-xl md:leading-relaxed">
               锡兰自动将用户反馈转化为需求文档，实现软件迭代的智能闭环。从反馈挖掘新需求，让产品进化永不停歇。
             </p>
 
@@ -136,10 +136,16 @@ export default function HomePage() {
           </div>
 
           <div
-            className={`hidden md:block md:w-[58%] lg:w-[60%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
-            style={{ aspectRatio: "16/10" }}
+            className={`relative hidden overflow-hidden rounded-2xl bg-neutral-900 shadow-xl shadow-neutral-900/15 dark:shadow-neutral-900/30 md:block md:w-[48%] lg:w-[46%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+            style={{ aspectRatio: "3/2" }}
           >
-            <HeroScene />
+            <Image
+              src="/home-right.png"
+              alt="CeylonM 平台展示"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
 
           <button
