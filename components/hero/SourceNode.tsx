@@ -6,16 +6,20 @@ import { RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { createTextTexture, createSymbolTexture } from "./utils";
 
-const platformMat = new THREE.MeshStandardMaterial({
+const platformMat = new THREE.MeshPhysicalMaterial({
   color: 0xffffff,
-  roughness: 0.25,
-  metalness: 0.02,
+  roughness: 0.1,
+  metalness: 0.05,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.1,
 });
 
-const acrylicMat = new THREE.MeshStandardMaterial({
+const acrylicMat = new THREE.MeshPhysicalMaterial({
   color: 0xffffff,
-  roughness: 0.2,
+  roughness: 0.15,
   metalness: 0.05,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.1,
 });
 
 const floatPositions = [

@@ -1,7 +1,6 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import SceneLights from "./SceneLights";
 import SourceNode from "./SourceNode";
@@ -15,30 +14,19 @@ export default function HeroScene() {
     <Canvas
       gl={{ alpha: true, antialias: true }}
       shadows
-      camera={{ position: [7, 5, 7], fov: 30, near: 0.1, far: 100 }}
+      camera={{ position: [8.5, 6, 8.5], fov: 26, near: 0.1, far: 100 }}
       style={{ background: "transparent" }}
     >
       <SceneLights />
-      <SourceNode />
-      <FeedbackNode />
-      <FloatingLogo />
-      <FlowBridge />
-      <FlowParticles />
-      <OrbitControls
-        autoRotate={false}
-        enableZoom={false}
-        enablePan={false}
-        enableDamping
-        dampingFactor={0.05}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 2.2}
-      />
+      <group scale={0.85}>
+        <SourceNode />
+        <FeedbackNode />
+        <FloatingLogo />
+        <FlowBridge />
+        <FlowParticles />
+      </group>
       <EffectComposer>
-        <Bloom
-          intensity={1.2}
-          luminanceThreshold={0.2}
-          mipmapBlur
-        />
+        <Bloom intensity={1.0} luminanceThreshold={0.25} mipmapBlur />
       </EffectComposer>
     </Canvas>
   );

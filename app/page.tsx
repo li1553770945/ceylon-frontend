@@ -95,9 +95,9 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative flex min-h-[100vh] flex-col items-center justify-center px-6 md:flex-row md:items-center md:justify-center md:gap-12 lg:gap-16">
+        <section className="relative flex min-h-[100vh] flex-col items-center justify-center px-6 md:flex-row md:items-center md:justify-center">
           <div
-            className={`max-w-3xl text-center transition-opacity duration-1000 md:text-left md:max-w-xl lg:max-w-2xl ${mounted ? "opacity-100" : "opacity-0"}`}
+            className={`md:w-[38%] lg:w-[36%] text-center transition-opacity duration-1000 md:text-left ${mounted ? "opacity-100" : "opacity-0"}`}
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-ceylonm/20 bg-ceylonm/10 px-4 py-1.5 text-sm font-medium text-ceylonm dark:border-ceylonm/30 dark:bg-ceylonm/15">
               <span>✨</span>
@@ -136,8 +136,8 @@ export default function HomePage() {
           </div>
 
           <div
-            className={`hidden md:block w-full max-w-lg xl:max-w-xl transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
-            style={{ aspectRatio: "3/2" }}
+            className={`hidden md:block md:w-[58%] lg:w-[60%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+            style={{ aspectRatio: "16/10" }}
           >
             <HeroScene />
           </div>

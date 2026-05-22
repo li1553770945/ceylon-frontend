@@ -2,34 +2,31 @@
 
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import { RoundedBox } from "@react-three/drei";
+import { RoundedBox, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { createTextTexture, createSymbolTexture } from "./utils";
+import { createTextTexture } from "./utils";
 
-const platformMat = new THREE.MeshStandardMaterial({
+const platformMat = new THREE.MeshPhysicalMaterial({
   color: 0xffffff,
-  roughness: 0.25,
-  metalness: 0.02,
+  roughness: 0.1,
+  metalness: 0.05,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.1,
 });
 
-const orangeMat = new THREE.MeshStandardMaterial({
+const orangeMat = new THREE.MeshPhysicalMaterial({
   color: 0xc85c1b,
-  roughness: 0.3,
+  roughness: 0.2,
   metalness: 0.1,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.1,
   emissive: 0xff6600,
-  emissiveIntensity: 0.2,
+  emissiveIntensity: 0.15,
 });
 
 export default function FloatingLogo() {
-  const dTexture = useMemo(
-    () =>
-      createSymbolTexture("D", {
-        size: 128,
-        bgColor: "#c85c1b",
-        symbolColor: "#ffffff",
-      }),
-    []
-  );
+  const iconTexture = useTexture("/icons/icon-512x512.png");
+
   const bridgeLabelTex = useMemo(
     () =>
       createTextTexture("BRIDGE", {
@@ -89,10 +86,10 @@ export default function FloatingLogo() {
         <primitive object={orangeMat} attach="material" />
       </RoundedBox>
 
-      {/* D symbol */}
+      {/* Icon */}
       <mesh position={[0, 0.85, 0.08]}>
         <planeGeometry args={[0.5, 0.5]} />
-        <meshBasicMaterial map={dTexture} transparent />
+        <meshBasicMaterial map={iconTexture} transparent />
       </mesh>
 
       {/* BRIDGE label */}
