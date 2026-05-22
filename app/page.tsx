@@ -106,9 +106,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center md:flex-row md:items-center md:justify-center md:gap-10 lg:gap-14">
+          <div className="flex w-full flex-col items-center md:flex-row md:items-center md:gap-10 lg:gap-14">
             <div
-              className={`md:w-[44%] lg:w-[42%] text-center transition-opacity duration-1000 md:text-left ${mounted ? "opacity-100" : "opacity-0"}`}
+              className={`md:w-[38%] lg:w-[36%] text-center transition-opacity duration-1000 md:text-left ${mounted ? "opacity-100" : "opacity-0"}`}
             >
               <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl md:leading-tight">
                 让 AI 接管你的需求工作流
@@ -142,7 +142,7 @@ export default function HomePage() {
             </div>
 
             <div
-              className={`relative hidden overflow-hidden md:block md:w-[48%] lg:w-[46%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+              className={`relative hidden overflow-hidden rounded-2xl bg-neutral-900 shadow-xl shadow-neutral-900/15 dark:shadow-neutral-900/30 md:block md:w-[58%] lg:w-[56%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
               style={{ aspectRatio: "3/2" }}
             >
               <Image
