@@ -5,20 +5,24 @@ import * as THREE from "three";
 import { RoundedBox, useTexture } from "@react-three/drei";
 import { createTextTexture } from "./utils";
 
-const platformMat = new THREE.MeshPhysicalMaterial({
-  color: 0xffffff,
-  roughness: 0.1,
-  metalness: 0.05,
-  clearcoat: 1.0,
-  clearcoatRoughness: 0.1,
+const silverMat = new THREE.MeshStandardMaterial({
+  color: "#c8cdd5",
+  roughness: 0.2,
+  metalness: 0.7,
+});
+
+const darkMat = new THREE.MeshStandardMaterial({
+  color: "#252a32",
+  roughness: 0.45,
+  metalness: 0.35,
 });
 
 const chipBodyMat = new THREE.MeshPhysicalMaterial({
   color: 0x2d2d3a,
   roughness: 0.25,
   metalness: 0.3,
-  clearcoat: 1.0,
-  clearcoatRoughness: 0.15,
+  clearcoat: 0.3,
+  clearcoatRoughness: 0.2,
 });
 
 const pinMat = new THREE.MeshStandardMaterial({
@@ -37,17 +41,6 @@ export default function FloatingLogo() {
         textColor: "#ffffff",
         fontSize: 14,
         padding: 6,
-        borderRadius: 3,
-      }),
-    []
-  );
-  const subLabelTex = useMemo(
-    () =>
-      createTextTexture("Connect Code to Feedback", {
-        bgColor: "rgba(255,255,255,0.92)",
-        textColor: "#444444",
-        fontSize: 12,
-        padding: 5,
         borderRadius: 3,
       }),
     []
@@ -73,64 +66,46 @@ export default function FloatingLogo() {
 
   return (
     <group position={[0, -0.05, 0]}>
-      {/* Platform */}
-      <RoundedBox
-        args={[1.8, 0.35, 1.8]}
-        radius={0.1}
-        smoothness={4}
-        position={[0, 0.175, 0]}
-        castShadow
-        receiveShadow
-      >
-        <primitive object={platformMat} attach="material" />
+      {/* === Bottom tier: Silver base === */}
+      <RoundedBox args={[1.8, 0.15, 1.8]} radius={0.08} smoothness={3} position={[0, 0.075, 0]} castShadow receiveShadow>
+        <primitive object={silverMat} attach="material" />
       </RoundedBox>
 
-      {/* === Chip === */}
+      {/* === Middle tier: Dark platform === */}
+      <RoundedBox args={[1.4, 0.5, 1.4]} radius={0.06} smoothness={3} position={[0, 0.4, 0]} castShadow receiveShadow>
+        <primitive object={darkMat} attach="material" />
+      </RoundedBox>
+
+      {/* === Top tier: Chip device === */}
       {/* Chip body */}
       <RoundedBox
         args={[0.85, 0.1, 0.85]}
         radius={0.06}
-        smoothness={4}
-        position={[0, 0.55, 0]}
+        smoothness={3}
+        position={[0, 0.7, 0]}
         castShadow
       >
         <primitive object={chipBodyMat} attach="material" />
       </RoundedBox>
 
       {/* Icon on top */}
-      <mesh position={[0, 0.61, 0]}>
+      <mesh position={[0, 0.76, 0]}>
         <planeGeometry args={[0.55, 0.55]} />
         <meshBasicMaterial map={iconTexture} transparent />
       </mesh>
 
       {/* Gold pins around chip */}
       {pins.map((pin, i) => (
-        <mesh key={i} position={[pin.x, 0.5, pin.z]} rotation={[0, pin.rot, 0]}>
+        <mesh key={i} position={[pin.x, 0.65, pin.z]} rotation={[0, pin.rot, 0]}>
           <boxGeometry args={[0.06, 0.04, 0.14]} />
           <primitive object={pinMat} attach="material" />
         </mesh>
       ))}
 
       {/* BRIDGE label */}
-      <mesh position={[0, 1.15, 0]}>
+      <mesh position={[0, 1.55, 0]}>
         <planeGeometry args={[1.1, 0.36]} />
         <meshBasicMaterial map={bridgeLabelTex} transparent />
-      </mesh>
-
-      {/* Subtitle */}
-      <mesh position={[0, 0.8, 0]}>
-        <planeGeometry args={[2.1, 0.32]} />
-        <meshBasicMaterial map={subLabelTex} transparent />
-      </mesh>
-
-      {/* Pillars */}
-      <mesh position={[-0.65, -0.4, 0]} castShadow>
-        <boxGeometry args={[0.28, 1.1, 0.28]} />
-        <primitive object={platformMat} attach="material" />
-      </mesh>
-      <mesh position={[0.65, -0.4, 0]} castShadow>
-        <boxGeometry args={[0.28, 1.1, 0.28]} />
-        <primitive object={platformMat} attach="material" />
       </mesh>
     </group>
   );

@@ -3,88 +3,63 @@
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { RoundedBox } from "@react-three/drei";
 
-const BELT_Y = 0.42;
-const PACKAGE_Y = BELT_Y + 0.015 + 0.06; // on top of belt
+function createTubeCurve(fromX: number, toX: number, z: number, midY: number) {
+  const midX = (fromX + toX) / 2;
+  return new THREE.CatmullRomCurve3([
+    new THREE.Vector3(fromX, 0.4, z),
+    new THREE.Vector3(midX - 0.3, midY, z),
+    new THREE.Vector3(midX, midY + 0.08, z),
+    new THREE.Vector3(midX + 0.3, midY, z),
+    new THREE.Vector3(toX, 0.4, z),
+  ]);
+}
+
+const PARTICLES = [
+  { curve: createTubeCurve(-2.7, -0.8, -0.42, 0.72), color: "#c85c1b", speed: 0.35, offset: 0 },
+  { curve: createTubeCurve(-2.7, -0.8, 0.42, 0.72), color: "#c85c1b", speed: 0.35, offset: Math.PI },
+  { curve: createTubeCurve(0.8, 2.7, -0.42, 0.72), color: "#2a7fff", speed: 0.35, offset: Math.PI * 0.5 },
+  { curve: createTubeCurve(0.8, 2.7, 0.42, 0.72), color: "#2a7fff", speed: 0.35, offset: Math.PI * 1.5 },
+];
 
 export default function FlowParticles() {
-  const particles = useMemo(() => {
-    const arr: {
-      meshRef: React.MutableRefObject<THREE.Mesh | null>;
-      fromX: number;
-      toX: number;
-      z: number;
-      speed: number;
-      offset: number;
-      color: string;
-    }[] = [];
-
-    // Left → Center packages (orange)
-    const leftZ = [-0.42, 0, 0.42];
-    for (let i = 0; i < 3; i++) {
-      arr.push({
-        meshRef: { current: null },
-        fromX: -1.7,
-        toX: -0.95,
-        z: leftZ[i],
-        speed: 0.5 + Math.random() * 0.3,
-        offset: Math.random() * Math.PI * 2,
-        color: "#c85c1b",
-      });
-    }
-
-    // Center → Right packages (blue)
-    const rightZ = [-0.42, 0, 0.42];
-    for (let i = 0; i < 3; i++) {
-      arr.push({
-        meshRef: { current: null },
-        fromX: 0.95,
-        toX: 1.7,
-        z: rightZ[i],
-        speed: 0.5 + Math.random() * 0.3,
-        offset: Math.random() * Math.PI * 2,
-        color: "#2a7fff",
-      });
-    }
-
-    return arr;
-  }, []);
+  const refs = useRef<(THREE.Mesh | null)[]>([]);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    particles.forEach((p) => {
-      if (!p.meshRef.current) return;
-      // Smooth back-and-forth using sin
+    PARTICLES.forEach((p, i) => {
+      const mesh = refs.current[i];
+      if (!mesh) return;
+      // Back-and-forth along the curve
       const raw = Math.sin(t * p.speed + p.offset);
       const progress = (raw + 1) / 2; // 0..1
-      const x = p.fromX + (p.toX - p.fromX) * progress;
-      p.meshRef.current.position.set(x, PACKAGE_Y, p.z);
-      // Slight wobble for liveliness
-      p.meshRef.current.rotation.y = Math.sin(t * 2 + p.offset) * 0.1;
+      const point = p.curve.getPointAt(progress);
+      mesh.position.copy(point);
+      mesh.position.y += 0.08; // slightly above tube
+      // Look along curve tangent
+      const tangent = p.curve.getTangentAt(progress);
+      mesh.lookAt(point.clone().add(tangent));
     });
   });
 
   return (
     <>
-      {particles.map((p, i) => (
-        <RoundedBox
+      {PARTICLES.map((p, i) => (
+        <mesh
           key={i}
-          ref={(el: THREE.Mesh | null) => {
-            p.meshRef.current = el;
+          ref={(el) => {
+            refs.current[i] = el;
           }}
-          args={[0.2, 0.14, 0.2]}
-          radius={0.03}
-          smoothness={2}
         >
-          <meshPhysicalMaterial
+          <boxGeometry args={[0.2, 0.14, 0.2]} />
+          <meshStandardMaterial
             color={p.color}
-            roughness={0.2}
+            roughness={0.3}
             metalness={0.1}
-            clearcoat={1.0}
-            clearcoatRoughness={0.1}
+            emissive={p.color}
+            emissiveIntensity={0.2}
           />
-        </RoundedBox>
+        </mesh>
       ))}
     </>
   );

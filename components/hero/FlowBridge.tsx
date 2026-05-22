@@ -4,155 +4,130 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 
-const BELT_WIDTH = 0.38;
-const BELT_HEIGHT = 0.03;
-const BELT_LENGTH = 0.9;
-const BELT_Y = 0.42;
-const BELT_COLOR = "#c85c1b";
-const BELT_DARK = "#a0400e";
-
 const Z_OFFSETS = [-0.42, 0, 0.42];
 
-function createBeltTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d")!;
-
-  // Base color
-  ctx.fillStyle = BELT_COLOR;
-  ctx.fillRect(0, 0, 256, 64);
-
-  // Stripes
-  for (let i = 0; i < 8; i++) {
-    ctx.fillStyle = i % 2 === 0 ? BELT_DARK : "#d4682a";
-    ctx.fillRect(i * 32, 0, 32, 64);
-  }
-
-  // Border lines
-  ctx.strokeStyle = "#7a2e08";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(0, 0, 256, 64);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(4, 1);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-const inletMat = new THREE.MeshStandardMaterial({
-  color: 0x2a2a2a,
-  roughness: 0.4,
-  metalness: 0.3,
+// Glow material for conveyor tubes
+const tubeMat = new THREE.MeshStandardMaterial({
+  color: "#c85c1b",
+  roughness: 0.2,
+  metalness: 0.1,
+  emissive: "#c85c1b",
+  emissiveIntensity: 0.4,
 });
 
+const tubeGlowMat = new THREE.MeshBasicMaterial({
+  color: "#ff8844",
+  transparent: true,
+  opacity: 0.15,
+  depthWrite: false,
+});
+
+// Inlet/outlet connectors on dark tier
+const inletMat = new THREE.MeshStandardMaterial({
+  color: "#1a1e24",
+  roughness: 0.4,
+  metalness: 0.5,
+});
+
+function createTubeCurve(fromX: number, toX: number, z: number, midY: number) {
+  const midX = (fromX + toX) / 2;
+  return new THREE.CatmullRomCurve3([
+    new THREE.Vector3(fromX, 0.4, z),
+    new THREE.Vector3(midX - 0.3, midY, z),
+    new THREE.Vector3(midX, midY + 0.08, z),
+    new THREE.Vector3(midX + 0.3, midY, z),
+    new THREE.Vector3(toX, 0.4, z),
+  ]);
+}
+
 export default function FlowBridge() {
-  const beltTexture = useMemo(() => createBeltTexture(), []);
-  const beltRefs = useRef<THREE.Mesh[]>([]);
+  const glowRefs = useRef<THREE.Mesh[]>([]);
+
+  const curves = useMemo(() => {
+    // Left → Center: from x=-2.7 to x=-0.8
+    const leftCurves = Z_OFFSETS.map((z) =>
+      createTubeCurve(-2.7, -0.8, z, 0.72)
+    );
+    // Center → Right: from x=0.8 to x=2.7
+    const rightCurves = Z_OFFSETS.map((z) =>
+      createTubeCurve(0.8, 2.7, z, 0.72)
+    );
+    return { leftCurves, rightCurves };
+  }, []);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    beltRefs.current.forEach((mesh) => {
-      if (mesh) {
-        const mat = mesh.material as THREE.MeshStandardMaterial;
-        if (mat.map) {
-          mat.map.offset.x = -t * 0.8;
-        }
-      }
+    // Gentle pulse on glow overlays
+    glowRefs.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      const mat = mesh.material as THREE.MeshBasicMaterial;
+      mat.opacity = 0.1 + Math.sin(t * 1.5 + i * 0.7) * 0.05;
     });
   });
 
   return (
     <>
-      {/* Left → Center belts */}
-      {Z_OFFSETS.map((z, i) => (
-        <group key={`lc-${i}`}>
-          {/* Belt */}
-          <mesh
-            ref={(el) => {
-              if (el) beltRefs.current[i] = el;
-            }}
-            position={[-1.325, BELT_Y, z]}
-          >
-            <boxGeometry args={[BELT_LENGTH, BELT_HEIGHT, BELT_WIDTH]} />
-            <meshPhysicalMaterial
-              map={beltTexture.clone()}
-              color="#c85c1b"
-              roughness={0.15}
-              metalness={0.1}
-              clearcoat={1.0}
-              clearcoatRoughness={0.1}
-              transmission={0.35}
-              transparent
-              opacity={0.85}
-            />
-          </mesh>
-          {/* Inlet at left platform */}
-          <mesh position={[-1.78, BELT_Y, z]}>
-            <boxGeometry args={[0.14, 0.14, BELT_WIDTH + 0.02]} />
-            <primitive object={inletMat} attach="material" />
-          </mesh>
-          {/* Inlet at center platform */}
-          <mesh position={[-0.87, BELT_Y, z]}>
-            <boxGeometry args={[0.14, 0.14, BELT_WIDTH + 0.02]} />
-            <primitive object={inletMat} attach="material" />
-          </mesh>
-        </group>
-      ))}
+      {/* Left → Center tubes */}
+      {curves.leftCurves.map((curve, i) => {
+        const tubeGeo = new THREE.TubeGeometry(curve, 32, 0.06, 8, false);
+        return (
+          <group key={`lc-${i}`}>
+            <mesh geometry={tubeGeo}>
+              <primitive object={tubeMat} attach="material" />
+            </mesh>
+            {/* Glow overlay */}
+            <mesh
+              ref={(el) => {
+                if (el) glowRefs.current[i] = el;
+              }}
+              geometry={new THREE.TubeGeometry(curve, 32, 0.1, 8, false)}
+            >
+              <primitive object={tubeGlowMat} attach="material" />
+            </mesh>
+            {/* Inlet at left platform */}
+            <mesh position={[-2.7, 0.4, Z_OFFSETS[i]]}>
+              <cylinderGeometry args={[0.07, 0.07, 0.15, 12]} />
+              <primitive object={inletMat} attach="material" />
+            </mesh>
+            {/* Inlet at center platform */}
+            <mesh position={[-0.8, 0.4, Z_OFFSETS[i]]}>
+              <cylinderGeometry args={[0.07, 0.07, 0.15, 12]} />
+              <primitive object={inletMat} attach="material" />
+            </mesh>
+          </group>
+        );
+      })}
 
-      {/* Center → Right belts */}
-      {Z_OFFSETS.map((z, i) => (
-        <group key={`cr-${i}`}>
-          {/* Belt */}
-          <mesh
-            ref={(el) => {
-              if (el) beltRefs.current[i + 3] = el;
-            }}
-            position={[1.325, BELT_Y, z]}
-          >
-            <boxGeometry args={[BELT_LENGTH, BELT_HEIGHT, BELT_WIDTH]} />
-            <meshStandardMaterial
-              map={beltTexture.clone()}
-              roughness={0.6}
-              metalness={0.1}
-            />
-          </mesh>
-          {/* Inlet at center platform */}
-          <mesh position={[0.87, BELT_Y, z]}>
-            <boxGeometry args={[0.14, 0.14, BELT_WIDTH + 0.02]} />
-            <primitive object={inletMat} attach="material" />
-          </mesh>
-          {/* Inlet at right platform */}
-          <mesh position={[1.78, BELT_Y, z]}>
-            <boxGeometry args={[0.14, 0.14, BELT_WIDTH + 0.02]} />
-            <primitive object={inletMat} attach="material" />
-          </mesh>
-        </group>
-      ))}
-
-      {/* Bottom dashed arc */}
-      <points>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[
-              new Float32Array(
-                Array.from({ length: 30 }, (_, i) => {
-                  const t = i / 29;
-                  const x = -2.2 + t * 4.4;
-                  const y = -0.25 - Math.sin(t * Math.PI) * 0.45;
-                  const z = 0.6 + Math.sin(t * Math.PI) * 0.3;
-                  return [x, y, z];
-                }).flat()
-              ),
-              3,
-            ]}
-          />
-        </bufferGeometry>
-        <pointsMaterial color="#c85c1b" size={0.07} transparent opacity={0.5} />
-      </points>
+      {/* Center → Right tubes */}
+      {curves.rightCurves.map((curve, i) => {
+        const tubeGeo = new THREE.TubeGeometry(curve, 32, 0.06, 8, false);
+        return (
+          <group key={`cr-${i}`}>
+            <mesh geometry={tubeGeo}>
+              <primitive object={tubeMat} attach="material" />
+            </mesh>
+            {/* Glow overlay */}
+            <mesh
+              ref={(el) => {
+                if (el) glowRefs.current[i + 3] = el;
+              }}
+              geometry={new THREE.TubeGeometry(curve, 32, 0.1, 8, false)}
+            >
+              <primitive object={tubeGlowMat} attach="material" />
+            </mesh>
+            {/* Inlet at center platform */}
+            <mesh position={[0.8, 0.4, Z_OFFSETS[i]]}>
+              <cylinderGeometry args={[0.07, 0.07, 0.15, 12]} />
+              <primitive object={inletMat} attach="material" />
+            </mesh>
+            {/* Inlet at right platform */}
+            <mesh position={[2.7, 0.4, Z_OFFSETS[i]]}>
+              <cylinderGeometry args={[0.07, 0.07, 0.15, 12]} />
+              <primitive object={inletMat} attach="material" />
+            </mesh>
+          </group>
+        );
+      })}
     </>
   );
 }

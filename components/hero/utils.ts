@@ -82,6 +82,55 @@ export function createTextTexture(
   return configureTexture(texture);
 }
 
+export function createPatternTexture(
+  options: {
+    size?: number;
+    color?: string;
+    bgColor?: string;
+    rings?: number;
+  } = {}
+) {
+  const {
+    size = 256,
+    color = "#d8d8e0",
+    bgColor = "transparent",
+    rings = 4,
+  } = options;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+
+  if (bgColor !== "transparent") {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, size, size);
+  }
+
+  const center = size / 2;
+  for (let i = rings; i > 0; i--) {
+    ctx.beginPath();
+    ctx.arc(center, center, (center * i) / rings, 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.15 + (rings - i) * 0.08;
+    ctx.stroke();
+  }
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(center, center, 4, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.3;
+  ctx.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  return texture;
+}
+
 export function createSymbolTexture(
   symbol: string,
   options: {

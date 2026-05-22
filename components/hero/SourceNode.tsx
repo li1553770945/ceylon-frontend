@@ -1,32 +1,30 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import * as THREE from "three";
 import { RoundedBox } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { createTextTexture, createSymbolTexture } from "./utils";
+import { createTextTexture, createSymbolTexture, createPatternTexture } from "./utils";
 
-const platformMat = new THREE.MeshPhysicalMaterial({
-  color: 0xffffff,
-  roughness: 0.1,
-  metalness: 0.05,
-  clearcoat: 1.0,
-  clearcoatRoughness: 0.1,
+// Shared materials - created once
+const silverMat = new THREE.MeshStandardMaterial({
+  color: "#c8cdd5",
+  roughness: 0.2,
+  metalness: 0.7,
 });
 
-const acrylicMat = new THREE.MeshPhysicalMaterial({
-  color: 0xffffff,
+const darkMat = new THREE.MeshStandardMaterial({
+  color: "#252a32",
+  roughness: 0.45,
+  metalness: 0.35,
+});
+
+const whiteMat = new THREE.MeshPhysicalMaterial({
+  color: 0xf0f0f5,
   roughness: 0.15,
   metalness: 0.05,
-  clearcoat: 1.0,
-  clearcoatRoughness: 0.1,
+  clearcoat: 0.5,
+  clearcoatRoughness: 0.2,
 });
-
-const floatPositions = [
-  { x: -1.8, y: 1.8, z: -0.7 },
-  { x: -1.4, y: 2.2, z: 0.6 },
-  { x: -2.1, y: 1.5, z: 0.4 },
-];
 
 export default function SourceNode() {
   const codeTexture = useMemo(
@@ -44,64 +42,52 @@ export default function SourceNode() {
       }),
     []
   );
-
-  const floatingRefs = useRef<THREE.Mesh[]>([]);
-
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    floatingRefs.current.forEach((mesh, i) => {
-      if (!mesh) return;
-      const pos = floatPositions[i];
-      mesh.position.y = pos.y + Math.sin(t * (0.8 + i * 0.2) + i) * 0.1;
-      mesh.rotation.y = t * 0.3 + i;
-    });
-  });
+  const patternTex = useMemo(
+    () => createPatternTexture({ size: 256, color: "#a0a8b8", rings: 5 }),
+    []
+  );
 
   return (
     <group position={[-3.5, 0, 0]}>
-      {/* Base */}
-      <RoundedBox args={[3.5, 0.4, 2.4]} radius={0.12} smoothness={4} castShadow receiveShadow>
-        <primitive object={platformMat} attach="material" />
+      {/* === Bottom tier: Silver base === */}
+      <RoundedBox args={[2.2, 0.15, 1.6]} radius={0.08} smoothness={3} position={[0, 0.075, 0]} castShadow receiveShadow>
+        <primitive object={silverMat} attach="material" />
       </RoundedBox>
 
-      {/* Main cube */}
+      {/* Bottom pattern decoration */}
+      <mesh position={[0, 0.151, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[1.4, 1.0]} />
+        <meshBasicMaterial map={patternTex} transparent opacity={0.35} depthWrite={false} />
+      </mesh>
+
+      {/* === Middle tier: Dark platform (conveyor insertion level) === */}
+      <RoundedBox args={[1.7, 0.5, 1.3]} radius={0.06} smoothness={3} position={[0, 0.4, 0]} castShadow receiveShadow>
+        <primitive object={darkMat} attach="material" />
+      </RoundedBox>
+
+      {/* === Top tier: Main device === */}
       <RoundedBox
         args={[1.2, 1.2, 1.2]}
         radius={0.1}
-        smoothness={4}
-        position={[0, 0.9, 0]}
+        smoothness={3}
+        position={[0, 1.25, 0]}
         castShadow
         receiveShadow
       >
-        <primitive object={acrylicMat} attach="material" />
+        <primitive object={whiteMat} attach="material" />
       </RoundedBox>
 
       {/* </> symbol */}
-      <mesh position={[0, 0.9, 0.61]}>
+      <mesh position={[0, 1.25, 0.61]}>
         <planeGeometry args={[0.8, 0.8]} />
         <meshBasicMaterial map={codeTexture} transparent />
       </mesh>
 
       {/* Label */}
-      <mesh position={[0, 1.75, 0]}>
+      <mesh position={[0, 1.95, 0]}>
         <planeGeometry args={[1.8, 0.45]} />
         <meshBasicMaterial map={labelTexture} transparent />
       </mesh>
-
-      {/* Floating cubes */}
-      {floatPositions.map((pos, i) => (
-        <mesh
-          key={i}
-          ref={(el) => {
-            if (el) floatingRefs.current[i] = el;
-          }}
-          position={[pos.x, pos.y, pos.z]}
-          castShadow
-        >
-          <boxGeometry args={[0.25, 0.25, 0.25]} />
-          <primitive object={acrylicMat} attach="material" />
-        </mesh>
-      ))}
     </group>
   );
 }

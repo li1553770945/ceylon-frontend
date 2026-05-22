@@ -12,13 +12,14 @@ import FlowParticles from "./FlowParticles";
 export default function HeroScene() {
   return (
     <Canvas
+      frameloop="demand"
       gl={{ alpha: true, antialias: true }}
       shadows
-      camera={{ position: [9, 6.5, 9], fov: 26, near: 0.1, far: 100 }}
+      camera={{ position: [8, 5.5, 8], fov: 28, near: 0.1, far: 100 }}
       style={{ background: "transparent" }}
     >
       <SceneLights />
-      <group scale={0.82} position={[1.5, 0, 0]}>
+      <group scale={0.82} position={[1.2, 0, 0]}>
         <SourceNode />
         <FeedbackNode />
         <FloatingLogo />
@@ -26,7 +27,7 @@ export default function HeroScene() {
         <FlowParticles />
       </group>
       <EffectComposer>
-        <Bloom intensity={1.0} luminanceThreshold={0.25} mipmapBlur />
+        <Bloom intensity={0.6} luminanceThreshold={0.3} mipmapBlur />
       </EffectComposer>
     </Canvas>
   );
