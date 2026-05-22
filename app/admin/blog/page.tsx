@@ -1,66 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { BlogPost } from "@/types";
+import { getAllBlogPosts } from "@/lib/blog-api";
 import {
   Plus,
   Search,
   Pencil,
   Filter,
+  ImageOff,
 } from "lucide-react";
-
-const mockBlogs: BlogPost[] = [
-  {
-    id: "1",
-    slug: "getting-started",
-    title: "Getting Started with CEYLON",
-    subtitle: "A quick guide",
-    category: "教程",
-    status: "published",
-    cover_url: null,
-    summary: null,
-    content: "",
-    seo_title: null,
-    seo_description: null,
-    created_at: "2025-01-10T08:00:00Z",
-    updated_at: "2025-01-10T08:00:00Z",
-  },
-  {
-    id: "2",
-    slug: "roadmap-2025",
-    title: "CEYLON 2025 Roadmap",
-    subtitle: null,
-    category: "动态",
-    status: "draft",
-    cover_url: null,
-    summary: null,
-    content: "",
-    seo_title: null,
-    seo_description: null,
-    created_at: "2025-02-15T10:00:00Z",
-    updated_at: "2025-02-15T10:00:00Z",
-  },
-  {
-    id: "3",
-    slug: "api-release",
-    title: "API v2 Release",
-    subtitle: null,
-    category: "技术",
-    status: "archived",
-    cover_url: null,
-    summary: null,
-    content: "",
-    seo_title: null,
-    seo_description: null,
-    created_at: "2024-12-01T06:00:00Z",
-    updated_at: "2024-12-01T06:00:00Z",
-  },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 const statusLabel: Record<BlogPost["status"], string> = {
   draft: "草稿",
@@ -75,11 +30,21 @@ const statusStyle: Record<BlogPost["status"], string> = {
 };
 
 export default function AdminBlogPage() {
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<BlogPost["status"] | "all">("all");
   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    getAllBlogPosts()
+      .then(setBlogs)
+      .catch((err) => setError(err instanceof Error ? err.message : "加载失败"))
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = useMemo(() => {
-    return mockBlogs.filter((b) => {
+    return blogs.filter((b) => {
       const matchStatus = filterStatus === "all" || b.status === filterStatus;
       const matchSearch =
         search.trim() === "" ||
@@ -87,7 +52,7 @@ export default function AdminBlogPage() {
         b.slug.toLowerCase().includes(search.toLowerCase());
       return matchStatus && matchSearch;
     });
-  }, [filterStatus, search]);
+  }, [filterStatus, search, blogs]);
 
   return (
     <AuthGuard requireAdmin>
@@ -133,55 +98,108 @@ export default function AdminBlogPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">Slug</th>
-                    <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">标题</th>
-                    <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">分类</th>
-                    <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">状态</th>
-                    <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">创建时间</th>
-                    <th className="px-grid-4 py-3 text-right font-medium text-muted-foreground">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filtered.map((blog) => (
-                    <tr key={blog.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-grid-4 py-3 font-mono text-xs text-muted-foreground">{blog.slug}</td>
-                      <td className="px-grid-4 py-3 font-medium">{blog.title}</td>
-                      <td className="px-grid-4 py-3 text-muted-foreground">{blog.category}</td>
-                      <td className="px-grid-4 py-3">
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusStyle[blog.status]}`}
-                        >
-                          {statusLabel[blog.status]}
-                        </span>
-                      </td>
-                      <td className="px-grid-4 py-3 text-muted-foreground">
-                        {new Date(blog.created_at).toLocaleDateString("zh-CN")}
-                      </td>
-                      <td className="px-grid-4 py-3 text-right">
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/admin/blog/${blog.slug}`}>
-                            <Pencil className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                  {filtered.length === 0 && (
+          {loading && (
+            <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
                     <tr>
-                      <td colSpan={6} className="px-grid-4 py-12 text-center text-muted-foreground">
-                        没有找到符合条件的博客
-                      </td>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground"><Skeleton className="h-4 w-8" /></th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground"><Skeleton className="h-4 w-10" /></th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground"><Skeleton className="h-4 w-8" /></th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground"><Skeleton className="h-4 w-8" /></th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground"><Skeleton className="h-4 w-8" /></th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground"><Skeleton className="h-4 w-16" /></th>
+                      <th className="px-grid-4 py-3 text-right font-medium text-muted-foreground"><Skeleton className="h-4 w-8 ml-auto" /></th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i}>
+                        <td className="px-grid-4 py-3"><Skeleton className="h-10 w-10 rounded" /></td>
+                        <td className="px-grid-4 py-3"><Skeleton className="h-4 w-24" /></td>
+                        <td className="px-grid-4 py-3"><Skeleton className="h-4 w-32" /></td>
+                        <td className="px-grid-4 py-3"><Skeleton className="h-4 w-16" /></td>
+                        <td className="px-grid-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
+                        <td className="px-grid-4 py-3"><Skeleton className="h-4 w-20" /></td>
+                        <td className="px-grid-4 py-3 text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
+
+          {error && (
+            <div className="py-12 text-center text-destructive">{error}</div>
+          )}
+
+          {!loading && !error && (
+            <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">封面</th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">Slug</th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">标题</th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">分类</th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">状态</th>
+                      <th className="px-grid-4 py-3 text-left font-medium text-muted-foreground">创建时间</th>
+                      <th className="px-grid-4 py-3 text-right font-medium text-muted-foreground">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filtered.map((blog) => (
+                      <tr key={blog.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="px-grid-4 py-3">
+                          {blog.cover_image ? (
+                            <img
+                              src={blog.cover_image}
+                              alt={blog.title}
+                              className="h-10 w-10 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+                              <ImageOff className="h-4 w-4 text-muted-foreground opacity-50" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-grid-4 py-3 font-mono text-xs text-muted-foreground">{blog.slug}</td>
+                        <td className="px-grid-4 py-3 font-medium">{blog.title}</td>
+                        <td className="px-grid-4 py-3 text-muted-foreground">{blog.category}</td>
+                        <td className="px-grid-4 py-3">
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusStyle[blog.status]}`}
+                          >
+                            {statusLabel[blog.status]}
+                          </span>
+                        </td>
+                        <td className="px-grid-4 py-3 text-muted-foreground">
+                          {new Date(blog.created_at).toLocaleDateString("zh-CN")}
+                        </td>
+                        <td className="px-grid-4 py-3 text-right">
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/blog/${blog.slug}`}>
+                              <Pencil className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                    {filtered.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-grid-4 py-12 text-center text-muted-foreground">
+                          没有找到符合条件的博客
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </AdminShell>
     </AuthGuard>

@@ -30,7 +30,7 @@ const CaptchaDialog = dynamic(
 );
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8100";
 
 const teamMembers = [
   {
@@ -59,7 +59,7 @@ function QuoteAuthor() {
       />
       <div>
         <p className="text-sm font-medium text-white">{member.name}</p>
-        <p className="text-xs text-white/60">CEYLON Team</p>
+        <p className="text-xs text-white/60">锡兰作者</p>
       </div>
     </div>
   );

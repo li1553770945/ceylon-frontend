@@ -1,6 +1,6 @@
 import { type ApiError } from "@/types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8100";
 const API_VERSION_PREFIX = "/api/v1";
 const ACCESS_TOKEN_KEY = "ceylon_access_token";
 const REFRESH_TOKEN_KEY = "ceylon_refresh_token";
@@ -214,6 +214,13 @@ export async function apiJson<T>(
   }
 
   return parseResponse<T>(res);
+}
+
+export async function apiGet<T>(path: string, options?: ApiOptions): Promise<T> {
+  return apiJson<T>(path, {
+    method: "GET",
+    ...options,
+  });
 }
 
 export async function apiPost<T>(path: string, body: unknown, options?: ApiOptions): Promise<T> {

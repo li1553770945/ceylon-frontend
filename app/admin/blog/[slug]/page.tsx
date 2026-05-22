@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/layout/AuthGuard";
 import { AdminShell } from "@/components/layout/AdminShell";
@@ -8,22 +8,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { BlogPost } from "@/types";
-import { Save, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import {
+  getBlogPost,
+  createBlogPost,
+  updateBlogPost,
+  deleteBlogPost,
+} from "@/lib/blog-api";
+import {
+  Save,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  Trash2,
+} from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const mockBlog: BlogPost = {
-  id: "1",
-  slug: "getting-started",
-  title: "Getting Started with CEYLON",
-  subtitle: "A quick guide",
-  category: "教程",
-  status: "published",
-  cover_url: "",
-  summary: "",
-  content: "# Getting Started\n\nWelcome to CEYLON!\n\n## Installation\n\nRun the following command...",
-  seo_title: "",
-  seo_description: "",
-  created_at: "2025-01-10T08:00:00Z",
-  updated_at: "2025-01-10T08:00:00Z",
+const emptyForm: Partial<BlogPost> = {
+  slug: "",
+  title: "",
+  subtitle: "",
+  category: "",
+  status: "draft",
+  cover_image: "",
+  excerpt: "",
+  content: "",
+  meta_title: "",
+  meta_description: "",
 };
 
 export default function BlogEditorPage() {
@@ -32,24 +42,23 @@ export default function BlogEditorPage() {
   const slug = params.slug as string;
   const isNew = slug === "new";
 
-  const [form, setForm] = useState<Partial<BlogPost>>(
-    isNew
-      ? {
-          slug: "",
-          title: "",
-          subtitle: "",
-          category: "",
-          status: "draft",
-          cover_url: "",
-          summary: "",
-          content: "",
-          seo_title: "",
-          seo_description: "",
-        }
-      : mockBlog
-  );
+  const [form, setForm] = useState<Partial<BlogPost>>(emptyForm);
   const [preview, setPreview] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(!isNew);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isNew) {
+      setForm(emptyForm);
+      setLoading(false);
+      return;
+    }
+    getBlogPost(slug)
+      .then((post) => setForm(post))
+      .catch((err) => setError(err instanceof Error ? err.message : "加载失败"))
+      .finally(() => setLoading(false));
+  }, [slug, isNew]);
 
   const handleChange = (field: keyof BlogPost, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -57,13 +66,67 @@ export default function BlogEditorPage() {
 
   const handleSave = async (publish = false) => {
     setSaving(true);
-    // Mock save
-    await new Promise((r) => setTimeout(r, 600));
-    if (publish) {
-      setForm((prev) => ({ ...prev, status: "published" }));
+    setError(null);
+    try {
+      const payload = {
+        ...form,
+        status: publish ? "published" : (form.status || "draft"),
+      };
+      if (isNew) {
+        await createBlogPost(payload as Omit<BlogPost, "id" | "created_at" | "updated_at" | "view_count">);
+      } else {
+        await updateBlogPost(slug, payload);
+      }
+      router.push("/admin/blog");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "保存失败");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
+
+  const handleDelete = async () => {
+    if (!confirm("确定要删除这篇博客吗？此操作不可撤销。")) return;
+    setSaving(true);
+    try {
+      await deleteBlogPost(slug);
+      router.push("/admin/blog");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "删除失败");
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AuthGuard requireAdmin>
+        <AdminShell>
+          <div className="space-y-grid-4">
+            <div className="flex items-center gap-grid-3">
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-8 w-32" />
+            </div>
+            <div className="space-y-grid-4 rounded-lg border border-border bg-card p-grid-6 shadow-sm">
+              <div className="grid gap-grid-4 md:grid-cols-2">
+                <div className="space-y-2"><Skeleton className="h-4 w-8" /><Skeleton className="h-9 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-8" /><Skeleton className="h-9 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-12" /><Skeleton className="h-9 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-8" /><Skeleton className="h-9 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-8" /><Skeleton className="h-9 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-9 w-full" /></div>
+              </div>
+              <div className="space-y-2"><Skeleton className="h-4 w-8" /><Skeleton className="h-20 w-full" /></div>
+              <div className="space-y-2"><Skeleton className="h-4 w-12" /><Skeleton className="h-80 w-full" /></div>
+              <div className="grid gap-grid-4 md:grid-cols-2">
+                <div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-9 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-9 w-full" /></div>
+              </div>
+            </div>
+          </div>
+        </AdminShell>
+      </AuthGuard>
+    );
+  }
 
   return (
     <AuthGuard requireAdmin>
@@ -80,6 +143,17 @@ export default function BlogEditorPage() {
               </h1>
             </div>
             <div className="flex items-center gap-grid-2">
+              {!isNew && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDelete}
+                  disabled={saving}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  删除
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -108,6 +182,12 @@ export default function BlogEditorPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
           {preview ? (
             <div className="rounded-lg border border-border bg-card p-grid-6 shadow-sm prose dark:prose-invert max-w-none">
               <h1>{form.title}</h1>
@@ -123,7 +203,8 @@ export default function BlogEditorPage() {
                     id="slug"
                     value={form.slug || ""}
                     onChange={(e) => handleChange("slug", e.target.value)}
-                    placeholder="getting-started"
+                    placeholder="why-we-created-ceylon"
+                    disabled={!isNew}
                   />
                 </div>
                 <div className="space-y-2">
@@ -150,7 +231,7 @@ export default function BlogEditorPage() {
                     id="category"
                     value={form.category || ""}
                     onChange={(e) => handleChange("category", e.target.value)}
-                    placeholder="教程 / 动态 / 技术"
+                    placeholder="产品动态 / 最佳实践 / 技术"
                   />
                 </div>
                 <div className="space-y-2">
@@ -167,23 +248,23 @@ export default function BlogEditorPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cover_url">封面 URL</Label>
+                  <Label htmlFor="cover_image">封面 URL</Label>
                   <Input
-                    id="cover_url"
-                    value={form.cover_url || ""}
-                    onChange={(e) => handleChange("cover_url", e.target.value)}
+                    id="cover_image"
+                    value={form.cover_image || ""}
+                    onChange={(e) => handleChange("cover_image", e.target.value)}
                     placeholder="https://..."
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="summary">摘要</Label>
+                <Label htmlFor="excerpt">摘要</Label>
                 <textarea
-                  id="summary"
+                  id="excerpt"
                   className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                  value={form.summary || ""}
-                  onChange={(e) => handleChange("summary", e.target.value)}
+                  value={form.excerpt || ""}
+                  onChange={(e) => handleChange("excerpt", e.target.value)}
                   placeholder="文章摘要，用于列表展示"
                 />
               </div>
@@ -201,20 +282,20 @@ export default function BlogEditorPage() {
 
               <div className="grid gap-grid-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="seo_title">SEO 标题</Label>
+                  <Label htmlFor="meta_title">SEO 标题</Label>
                   <Input
-                    id="seo_title"
-                    value={form.seo_title || ""}
-                    onChange={(e) => handleChange("seo_title", e.target.value)}
+                    id="meta_title"
+                    value={form.meta_title || ""}
+                    onChange={(e) => handleChange("meta_title", e.target.value)}
                     placeholder="SEO 标题"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="seo_description">SEO 描述</Label>
+                  <Label htmlFor="meta_description">SEO 描述</Label>
                   <Input
-                    id="seo_description"
-                    value={form.seo_description || ""}
-                    onChange={(e) => handleChange("seo_description", e.target.value)}
+                    id="meta_description"
+                    value={form.meta_description || ""}
+                    onChange={(e) => handleChange("meta_description", e.target.value)}
                     placeholder="SEO 描述"
                   />
                 </div>

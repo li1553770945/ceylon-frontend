@@ -108,13 +108,16 @@ export interface BlogPost {
   slug: string;
   title: string;
   subtitle: string | null;
+  content: string;
+  excerpt: string | null;
+  cover_image: string | null;
   category: string;
   status: "draft" | "published" | "archived";
-  cover_url: string | null;
-  summary: string | null;
-  content: string;
-  seo_title: string | null;
-  seo_description: string | null;
+  author_id: string | null;
+  published_at: string | null;
+  view_count: number;
+  meta_title: string | null;
+  meta_description: string | null;
   created_at: string;
   updated_at: string;
 }
