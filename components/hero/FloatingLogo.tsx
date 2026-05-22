@@ -14,14 +14,20 @@ const platformMat = new THREE.MeshPhysicalMaterial({
   clearcoatRoughness: 0.1,
 });
 
-const orangeMat = new THREE.MeshPhysicalMaterial({
+const hubMat = new THREE.MeshPhysicalMaterial({
   color: 0xc85c1b,
   roughness: 0.2,
-  metalness: 0.1,
+  metalness: 0.2,
   clearcoat: 1.0,
   clearcoatRoughness: 0.1,
-  emissive: 0xff6600,
-  emissiveIntensity: 0.15,
+  emissive: 0xff4400,
+  emissiveIntensity: 0.2,
+});
+
+const darkPortMat = new THREE.MeshStandardMaterial({
+  color: 0x1a1a2e,
+  roughness: 0.4,
+  metalness: 0.6,
 });
 
 export default function FloatingLogo() {
@@ -50,13 +56,13 @@ export default function FloatingLogo() {
     []
   );
 
-  const logoRef = useRef<THREE.Mesh>(null);
+  const ringRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    if (logoRef.current) {
-      const s = 1 + Math.sin(t * 1.5) * 0.015;
-      logoRef.current.scale.set(s, s, s);
+    if (ringRef.current) {
+      ringRef.current.rotation.y = t * 0.8;
+      ringRef.current.position.y = 0.95 + Math.sin(t * 1.5) * 0.03;
     }
   });
 
@@ -74,21 +80,50 @@ export default function FloatingLogo() {
         <primitive object={platformMat} attach="material" />
       </RoundedBox>
 
-      {/* Logo square */}
-      <RoundedBox
-        ref={logoRef}
-        args={[0.75, 0.75, 0.14]}
-        radius={0.06}
-        smoothness={4}
-        position={[0, 0.85, 0]}
-        castShadow
-      >
-        <primitive object={orangeMat} attach="material" />
-      </RoundedBox>
+      {/* === Central Hub (Cylinder) === */}
+      <mesh position={[0, 0.75, 0]} castShadow>
+        <cylinderGeometry args={[0.35, 0.4, 0.7, 32]} />
+        <primitive object={hubMat} attach="material" />
+      </mesh>
 
-      {/* Icon */}
-      <mesh position={[0, 0.85, 0.08]}>
-        <planeGeometry args={[0.5, 0.5]} />
+      {/* Rotating ring on top */}
+      <group ref={ringRef} position={[0, 0.95, 0]}>
+        <mesh>
+          <torusGeometry args={[0.38, 0.03, 8, 32]} />
+          <meshBasicMaterial color="#ffaa66" />
+        </mesh>
+        {/* Indicator lights on ring */}
+        {[0, 1, 2, 3, 4, 5].map((i) => {
+          const angle = (i / 6) * Math.PI * 2;
+          return (
+            <mesh
+              key={`hub-led-${i}`}
+              position={[Math.cos(angle) * 0.38, 0, Math.sin(angle) * 0.38]}
+            >
+              <sphereGeometry args={[0.035]} />
+              <meshBasicMaterial color="#ffffff" />
+            </mesh>
+          );
+        })}
+      </group>
+
+      {/* Side ports */}
+      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+        const angle = (i / 8) * Math.PI * 2;
+        return (
+          <mesh
+            key={`port-${i}`}
+            position={[Math.cos(angle) * 0.42, 0.75, Math.sin(angle) * 0.42]}
+          >
+            <boxGeometry args={[0.08, 0.12, 0.06]} />
+            <primitive object={darkPortMat} attach="material" />
+          </mesh>
+        );
+      })}
+
+      {/* Icon on front */}
+      <mesh position={[0, 0.75, 0.42]}>
+        <planeGeometry args={[0.45, 0.45]} />
         <meshBasicMaterial map={iconTexture} transparent />
       </mesh>
 

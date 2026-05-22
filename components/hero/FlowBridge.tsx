@@ -77,10 +77,16 @@ export default function FlowBridge() {
             position={[-1.325, BELT_Y, z]}
           >
             <boxGeometry args={[BELT_LENGTH, BELT_HEIGHT, BELT_WIDTH]} />
-            <meshStandardMaterial
+            <meshPhysicalMaterial
               map={beltTexture.clone()}
-              roughness={0.6}
+              color="#c85c1b"
+              roughness={0.15}
               metalness={0.1}
+              clearcoat={1.0}
+              clearcoatRoughness={0.1}
+              transmission={0.35}
+              transparent
+              opacity={0.85}
             />
           </mesh>
           {/* Inlet at left platform */}

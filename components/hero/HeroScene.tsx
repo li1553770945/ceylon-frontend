@@ -14,11 +14,11 @@ export default function HeroScene() {
     <Canvas
       gl={{ alpha: true, antialias: true }}
       shadows
-      camera={{ position: [8.5, 6, 8.5], fov: 26, near: 0.1, far: 100 }}
+      camera={{ position: [9, 6.5, 9], fov: 26, near: 0.1, far: 100 }}
       style={{ background: "transparent" }}
     >
       <SceneLights />
-      <group scale={0.85}>
+      <group scale={0.8} position={[1.0, 0, 0]}>
         <SourceNode />
         <FeedbackNode />
         <FloatingLogo />

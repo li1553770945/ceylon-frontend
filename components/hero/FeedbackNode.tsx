@@ -22,6 +22,15 @@ const acrylicMat = new THREE.MeshPhysicalMaterial({
   clearcoatRoughness: 0.1,
 });
 
+const domeMat = new THREE.MeshPhysicalMaterial({
+  color: 0xe8e8f0,
+  roughness: 0.2,
+  metalness: 0.1,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.1,
+  transmission: 0.2,
+});
+
 const iconSymbols = ["!", "?", "+", "~"];
 const iconPos = [
   { x: 0.3, z: 1.4 },
@@ -29,6 +38,8 @@ const iconPos = [
   { x: 1.9, z: 1.4 },
   { x: 2.5, z: 1.6 },
 ];
+
+const statusColors = [0x22cc44, 0xffcc00, 0xff4444];
 
 export default function FeedbackNode() {
   const dotsTexture = useMemo(
@@ -61,6 +72,7 @@ export default function FeedbackNode() {
   );
 
   const iconRefs = useRef<THREE.Mesh[]>([]);
+  const antennaRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -68,6 +80,9 @@ export default function FeedbackNode() {
       if (!mesh) return;
       mesh.position.y = 0.45 + Math.sin(t * (0.6 + i * 0.15) + i * 1.5) * 0.08;
     });
+    if (antennaRef.current) {
+      antennaRef.current.rotation.z = Math.sin(t * 2) * 0.15;
+    }
   });
 
   return (
@@ -77,23 +92,57 @@ export default function FeedbackNode() {
         <primitive object={platformMat} attach="material" />
       </RoundedBox>
 
-      {/* Chat bubble cube */}
-      <RoundedBox
-        args={[1.1, 0.95, 1.1]}
-        radius={0.1}
-        smoothness={4}
-        position={[0, 0.9, 0]}
-        castShadow
-        receiveShadow
-      >
-        <primitive object={acrylicMat} attach="material" />
-      </RoundedBox>
+      {/* === Feedback Dome (Radar Station) === */}
+      {/* Dome */}
+      <mesh position={[0, 0.85, 0]} castShadow>
+        <sphereGeometry args={[0.6, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <primitive object={domeMat} attach="material" />
+      </mesh>
 
-      {/* ... symbol */}
-      <mesh position={[0, 0.9, 0.56]}>
-        <planeGeometry args={[0.7, 0.7]} />
+      {/* Base ring of dome */}
+      <mesh position={[0, 0.6, 0]}>
+        <torusGeometry args={[0.58, 0.04, 8, 32]} />
+        <meshStandardMaterial color="#888" metalness={0.7} roughness={0.2} />
+      </mesh>
+
+      {/* Screen on front */}
+      <mesh position={[0, 0.85, 0.52]}>
+        <planeGeometry args={[0.55, 0.35]} />
         <meshBasicMaterial map={dotsTexture} transparent />
       </mesh>
+
+      {/* Antenna */}
+      <group ref={antennaRef} position={[0, 1.35, 0]}>
+        <mesh position={[0, 0.15, 0]}>
+          <cylinderGeometry args={[0.015, 0.015, 0.3]} />
+          <meshStandardMaterial color="#888" metalness={0.8} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 0.35, 0]}>
+          <sphereGeometry args={[0.06]} />
+          <meshBasicMaterial color="#ff6600" />
+        </mesh>
+        {/* Signal waves */}
+        {[0.1, 0.15, 0.2].map((r, i) => (
+          <mesh key={`wave-${i}`} position={[0, 0.35, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[r, r + 0.015, 32]} />
+            <meshBasicMaterial color="#ffaa66" transparent opacity={0.4 - i * 0.1} side={THREE.DoubleSide} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Status indicator lights */}
+      {statusColors.map((color, i) => {
+        const angle = -0.6 + i * 0.6;
+        return (
+          <mesh
+            key={`status-${i}`}
+            position={[Math.sin(angle) * 0.5, 0.55, Math.cos(angle) * 0.5]}
+          >
+            <sphereGeometry args={[0.045]} />
+            <meshBasicMaterial color={color} />
+          </mesh>
+        );
+      })}
 
       {/* Label */}
       <mesh position={[0, 1.7, 0]}>
